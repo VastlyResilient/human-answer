@@ -104,11 +104,11 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   await sleep(500);
   report.checks.tome_reader_opens = await page.evaluate(() => {
     const t = document.body.textContent ?? '';
-    return t.includes('How do you forgive yourself') && t.includes('Read it where it lives') && t.includes('WolfSpirit99');
+    return t.includes('How do you forgive yourself') && t.includes("Quora profile") && t.includes('WolfSpirit99');
   });
   report.checks.tome_source_link_present = await page.evaluate(() => {
     const a = document.querySelector('.tome-source');
-    return a && a.getAttribute('href')?.includes('quora.com');
+    return a && a.getAttribute('href') === 'https://www.quora.com/profile/WolfSpirit99';
   });
   // Back to the shelf inside the window, then verify the 10-volume index
   await page.evaluate(() => {
