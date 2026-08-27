@@ -41,3 +41,13 @@ grounded in his verbatim Quora answers because those require the archive export
 (blocker #2 above). When the export lands: (a) replace KB entries one-for-one with
 his actual wording, or (b) switch the engine to a BYO-key model call with the
 export injected as retrieval context. The UI, streaming, and memory are already built.
+
+
+## Archive harvest (2026-08-27, authorized logged-in session)
+947 answers captured (947 unique permalinks, 5/5 spot-check verified, no Quora warnings).
+SHIPPED: every answer is a book in the archive browser with its TRUE permalink
+(`sourceUrl`) — the exact-answer link the site always promised.
+REMAINING: feed previews are truncated by Quora (~465 chars median); full verbatim
+texts need either (a) parsing the 23MB answers-feed-full.html expansion payloads,
+(b) a Matt-authorized logged-in per-URL pass, or (c) the official export. Preview
+passages are labeled as such in the UI.

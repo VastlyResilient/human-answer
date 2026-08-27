@@ -129,7 +129,7 @@ export default function WindowLayer(props: WindowLayerProps) {
             </div>
 
             {/* Body */}
-            <div className="min-h-0 flex-1 overflow-y-auto">
+            <div className={`min-h-0 flex-1 ${w.kind === 'answers' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
               <WindowBody kind={w.kind} windowId={w.id} openPayload={props.openPayload} />
             </div>
 
