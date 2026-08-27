@@ -13,6 +13,7 @@ working parts — Ask Matt queue, subscribe capture, archive stub.
 | `styles.css` | Theme + all scroll animation styling |
 | `script.js` | Animation engine, slider, forms |
 | `assets/OggText-Medium.woff2` | Display serif (vendored: origin CDN sends no CORS header) |
+| `import-answers.py` | Converts Matt's answer files into the categorized Answers page |
 | `research/matt-dossier.md` | Phase-0 research: what is verified vs unknown about Matt |
 | `research/DESIGN-BRIEF.md` | How each Mostar component maps to The Human Answer |
 | `GAPS.md` | Everything missing from Matt/Bobby before this is a "real" launch |
@@ -29,6 +30,25 @@ Submissions currently store **in the reader's own browser** (localStorage key
 given browser: open the site, press F12 → Console, type
 `JSON.parse(localStorage.ha_ask_queue)` and press Enter. Connecting the email
 provider (see GAPS.md #5) replaces this with a real inbox.
+
+### Import Matt's real Quora answers onto the Answers page
+1. Put each answer in `inputs/answers/` - one `.txt` or `.md` file per answer:
+   first line = the question, everything below = the answer text. Optional header
+   at the top sets topic/date/views/url:
+   ```
+   ---
+   topic: Family
+   date: 2021-03-04
+   views: 128000
+   url: https://www.quora.com/How-do-I...
+   ---
+   ```
+   (A single `.json` array of `{question, body, topic, ...}` objects also works -
+   that matches the shape of Quora's own account data export.)
+2. `python3 import-answers.py` -> rebuilds `answers.html` grouped by topic,
+   kept as PREVIEW + noindex until reviewed.
+3. Read the diff. If it looks right: `python3 import-answers.py --publish-real`,
+   then commit+push like any other update.
 
 ### Swap the animated wallpaper
 Replace the `src="…mp4"` value on the `<video class="wall-video">` line in
