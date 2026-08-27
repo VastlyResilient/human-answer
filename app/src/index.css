@@ -251,3 +251,191 @@ body { background: #000; }
 
 .chat-dot { animation: dot-pulse 1s ease-in-out infinite }
 @keyframes dot-pulse { 0%,100% { opacity:.35; transform:translateY(0) } 50% { opacity:1; transform:translateY(-2px) } }
+
+/* ================= Cursor discipline: arrow, not pointer-hand ================= */
+/* Per Bobby: hovering interactive app chrome keeps the default arrow.
+   Native controls (text inputs, textareas) keep text beams. */
+button, .book, .book-wrap, .sight-nav, .tome-source, .taskbar-btn,
+.desktop-icon, [role='button'] {
+  cursor: default;
+}
+input, textarea { cursor: text; }
+
+/* ================= Tome reader (opened book) ================= */
+@font-face {
+  font-family: 'Lawrence';
+  src: url('../fonts/Lawrence.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+.tome-frame {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-radius: 18px;
+  background-image: url('../folio/leather-frame.jpg');
+  background-size: cover;
+  background-position: center;
+  padding: clamp(18px, 3vw, 34px);
+  box-shadow: inset 0 0 0 2px rgba(30,18,8,0.9), inset 0 0 60px rgba(0,0,0,0.55), 0 40px 90px rgba(0,0,0,0.6);
+}
+@media (max-width: 860px) {
+  .tome-frame { grid-template-columns: 1fr; }
+}
+
+.tome-gutter {
+  position: absolute;
+  left: 50%;
+  top: 4%;
+  bottom: 4%;
+  width: 90px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg,
+    rgba(0,0,0,0) 0%, rgba(20,10,4,0.38) 38%,
+    rgba(15,8,3,0.6) 50%,
+    rgba(20,10,4,0.38) 62%, rgba(0,0,0,0) 100%);
+  pointer-events: none;
+  border-radius: 8px;
+}
+@media (max-width: 860px) { .tome-gutter { display: none; } }
+
+.tome-ribbon {
+  position: absolute;
+  top: -14px;
+  left: 62%;
+  width: 26px;
+  height: 120px;
+  background: linear-gradient(180deg, #7d1f1f, #5c1414);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.5), inset -2px 0 0 rgba(0,0,0,0.25);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 88%, 0 100%);
+  z-index: 5;
+}
+
+.tome-page {
+  position: relative;
+  padding: clamp(20px, 2.6vw, 34px) clamp(20px, 2.8vw, 40px);
+  color: #3d2c18;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(255,250,235,0.55), rgba(255,250,235,0) 55%),
+    radial-gradient(140% 110% at 50% 100%, rgba(160,120,60,0.16), rgba(0,0,0,0) 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+  background-color: #efe3c6;
+  box-shadow:
+    inset 0 0 42px rgba(120, 85, 40, 0.35),
+    inset 0 2px 0 rgba(255,255,255,0.5);
+  font-family: Georgia, 'Times New Roman', serif;
+}
+.tome-left { border-radius: 12px 3px 3px 12px; }
+.tome-right { border-radius: 3px 12px 12px 3px; }
+@media (max-width: 860px) {
+  .tome-left, .tome-right { border-radius: 8px; }
+  .tome-right { margin-top: 10px; }
+}
+
+.tome-kicker {
+  font-family: 'Lawrence', Georgia, serif;
+  font-size: 11px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: #8a6a3b;
+  margin-bottom: 12px;
+}
+
+.tome-title {
+  font-family: 'Lawrence', Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  font-size: clamp(22px, 2.2vw, 30px);
+  line-height: 1.16;
+  color: #2f2312;
+  text-shadow: 0 1px 0 rgba(255,250,230,0.6);
+}
+
+.tome-rule { margin: 14px 0 16px; }
+.tome-rule svg { width: 100%; height: 10px; display: block; }
+
+.tome-body p {
+  font-family: 'Lawrence', Georgia, serif;
+  font-size: clamp(15px, 1.15vw, 16.5px);
+  line-height: 1.62;
+  margin: 0 0 13px;
+  color: #402f1a;
+  text-shadow: 0 1px 0 rgba(255,248,225,0.35);
+}
+.tome-body p::first-letter { }
+.tome-signoff {
+  font-style: italic;
+  color: #6b5233 !important;
+  margin-top: 6px;
+}
+
+.tome-plate {
+  border: 1px solid rgba(107, 82, 51, 0.5);
+  padding: 10px;
+  background: rgba(250, 243, 223, 0.55);
+  box-shadow: inset 0 0 24px rgba(120,85,40,0.28);
+  border-radius: 6px;
+}
+.tome-plate img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 3px;
+  mix-blend-mode: multiply;
+  filter: sepia(0.25) contrast(0.98);
+}
+
+.tome-meta {
+  margin: 16px 0 0;
+  display: grid;
+  gap: 8px;
+}
+.tome-meta div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px dashed rgba(107, 82, 51, 0.4);
+  padding-bottom: 6px;
+}
+.tome-meta dt {
+  font-family: 'Lawrence', Georgia, serif;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #8a6a3b;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.tome-meta dd {
+  font-family: 'Lawrence', Georgia, serif;
+  font-size: 14px;
+  color: #402f1a;
+}
+
+.tome-source {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: #2f2312;
+  color: #efe3c6 !important;
+  font-family: 'Lawrence', Georgia, serif;
+  font-size: 13.5px;
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+  transition: transform 160ms ease, background 160ms ease;
+  justify-content: center;
+}
+.tome-source:hover { background: #443115; transform: translateY(-1px); }
+
+.tome-note {
+  margin-top: 12px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #7d6540;
+  font-style: italic;
+}

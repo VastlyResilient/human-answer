@@ -4,6 +4,7 @@ import AboutWindow from '../components/AboutWindow'
 import ColumnWindow from '../components/ColumnWindow'
 import AskMattChat from '../components/AskMattChat'
 import BookshelfWindowContent from '../components/BookshelfWindowContent'
+import MattsRecord from '../components/MattsRecord'
 
 interface WindowLayerProps {
   windows: WindowState[]
@@ -157,6 +158,8 @@ function WindowBody({ kind, openPayload }: { kind: WinKind; windowId: string; op
       return <ColumnWindow />
     case 'ask':
       return <AskMattChat />
+    case 'record':
+      return <MattsRecord />
     default:
       return null
   }

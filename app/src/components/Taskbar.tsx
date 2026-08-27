@@ -1,4 +1,4 @@
-import { Library, User, Newspaper, MessageCircle } from 'lucide-react'
+import { Library, User, Newspaper, MessageCircle, Trophy } from 'lucide-react'
 import type { WinKind, WindowState } from '../types'
 import { MENU_BAR_HEIGHT } from '../layoutConstants'
 
@@ -13,6 +13,7 @@ interface TaskbarProps {
 const items: { kind: WinKind; label: string; icon: typeof User }[] = [
   { kind: 'about', label: 'About Matt', icon: User },
   { kind: 'answers', label: "Matt's Answers", icon: Library },
+  { kind: 'record', label: 'Track Record', icon: Trophy },
   { kind: 'column', label: 'Living Column', icon: Newspaper },
   { kind: 'ask', label: 'Ask Matt', icon: MessageCircle },
 ]

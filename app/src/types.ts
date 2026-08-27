@@ -1,4 +1,4 @@
-export type WinKind = 'about' | 'answers' | 'column' | 'ask' | 'book'
+export type WinKind = 'about' | 'answers' | 'column' | 'ask' | 'book' | 'record'
 
 export interface WindowState {
   id: string

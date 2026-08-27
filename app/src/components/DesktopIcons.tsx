@@ -1,4 +1,4 @@
-import { Library, User, Newspaper, MessageCircle, Globe, Bookmark } from 'lucide-react'
+import { Library, User, Newspaper, MessageCircle, Globe, Bookmark, Trophy } from 'lucide-react'
 import type { WinKind } from '../types'
 
 interface DesktopIconsProps {
@@ -8,6 +8,7 @@ interface DesktopIconsProps {
 const icons = [
   { kind: 'about' as const, label: 'About Matt', icon: User },
   { kind: 'answers' as const, label: "Matt's Answers", icon: Library },
+  { kind: 'record' as const, label: 'Track Record', icon: Trophy },
   { kind: 'column' as const, label: 'Living Column', icon: Newspaper },
   { kind: 'ask' as const, label: 'Ask Matt', icon: MessageCircle },
 ]

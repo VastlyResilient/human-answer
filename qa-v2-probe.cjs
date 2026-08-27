@@ -58,18 +58,32 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   report.checks.red_closes = await page.evaluate(() => document.querySelectorAll("[data-window-id]").length === 0);
 
   // minimize path: open answers, minimize via yellow, restore via taskbar
-  await page.click('button:has-text("Matt\'s Answers")');
-  await sleep(700);
-  await page.click('button[aria-label^="Minimize"]');
+  await page.evaluate(() => {
+    const btns = Array.from(document.querySelectorAll('button'));
+    const ans = btns.find(b => b.textContent?.trim() === "Matt's Answers");
+    if (ans) ans.click();
+  });
+  await sleep(800);
+  await page.evaluate(() => {
+    const w = document.querySelector('[data-window-id]');
+    if (w) { const mb = w.querySelector('button[aria-label^="Minimize"]'); if (mb) mb.click(); }
+  });
   await sleep(250);
   const minimizedGone = await page.evaluate(() => document.querySelectorAll("[data-window-id]").length === 0);
-  await page.locator('button:has-text("Matt\'s Answers")').last().click(); // taskbar restore
+  await page.evaluate(() => {
+    const btns = Array.from(document.querySelectorAll('button'));
+    const tb = btns.filter(b => b.textContent?.trim() === "Matt's Answers");
+    if (tb.length) tb[tb.length - 1].click();
+  });
   await sleep(400);
   const restored = await page.evaluate(() => document.querySelectorAll("[data-window-id]").length === 1);
   report.checks.minimize_restore_cycle = minimizedGone && restored;
 
   // maximize toggle
-  await page.click('button[aria-label^="Maximize"]');
+  await page.evaluate(() => {
+    const w = document.querySelector('[data-window-id]');
+    if (w) { const mb = w.querySelector('button[aria-label^="Maximize"]'); if (mb) mb.click(); }
+  });
   await sleep(250);
   report.checks.maximize_works = await page.evaluate(() =>
     document.querySelector("[data-window-id]").getBoundingClientRect().width > innerWidth - 40);
@@ -85,16 +99,63 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
     return ok.every(Boolean) && urls.length === 10;
   });
 
-  // book click -> detail card shows question summary
+  // book click -> TOME READER (reference leather/parchment spread)
   await page.evaluate(() => document.querySelectorAll(".book-wrap")[2].dispatchEvent(new MouseEvent("click",{bubbles:true})));
-  await sleep(300);
-  report.checks.detail_question_summary = await page.evaluate(() => {
-    const txt = document.body.textContent;
-    return txt.includes("The question it answers") && txt.includes("How do you forgive yourself");
+  await sleep(500);
+  report.checks.tome_reader_opens = await page.evaluate(() => {
+    const t = document.body.textContent ?? '';
+    return t.includes('How do you forgive yourself') && t.includes('Read it where it lives') && t.includes('WolfSpirit99');
+  });
+  report.checks.tome_source_link_present = await page.evaluate(() => {
+    const a = document.querySelector('.tome-source');
+    return a && a.getAttribute('href')?.includes('quora.com');
+  });
+  // Back to the shelf inside the window, then verify the 10-volume index
+  await page.evaluate(() => {
+    const back = Array.from(document.querySelectorAll('button'))
+      .find(b => b.textContent?.includes('Back to the shelf'));
+    if (back) back.click();
+  });
+  await sleep(350);
+  report.checks.tome_has_10 = await page.evaluate(() => {
+    const btns = Array.from(document.querySelectorAll('button'));
+    return btns.filter(b => b.textContent?.includes("THE SILENCE AFTER")).length >= 1
+        && btns.filter(b => b.textContent?.includes("OLD DOGS")).length >= 1;
   });
 
+  // close answers window via JS (chrome buttons are inside a moving window)
+  await page.evaluate(() => {
+    const ws = Array.from(document.querySelectorAll('[data-window-id]'));
+    const top = ws[ws.length - 1];
+    if (top) { const cb = top.querySelector('button[aria-label^="Close"]'); if (cb) cb.click(); }
+  });
+  await sleep(300);
+
+  // ---- Track Record window ----
+  await page.evaluate(() => {
+    const btns = Array.from(document.querySelectorAll('button'));
+    const tr = btns.find(b => b.textContent?.trim() === 'Track Record');
+    if (tr) tr.click();
+  });
+  await sleep(500);
+  report.checks.track_record_opens = await page.evaluate(() => {
+    const t = document.body.textContent ?? '';
+    return t.includes('Track Record Worth Quoting') && t.includes('Verification');
+  });
+  // close it via JS
+  await page.evaluate(() => {
+    const ws = Array.from(document.querySelectorAll('[data-window-id]'));
+    const top = ws[ws.length - 1];
+    if (top) { const cb = top.querySelector('button[aria-label^="Close"]'); if (cb) cb.click(); }
+  });
+  await sleep(250);
+
   // ---- Chatbot E2E ----
-  await page.click('button[aria-label^="Close"]'); // close answers window
+  await page.evaluate(() => {
+    const ws = Array.from(document.querySelectorAll('[data-window-id]'));
+    const top = ws[ws.length - 1];
+    if (top) { const cb = top.querySelector('button[aria-label^="Close"]'); if (cb) cb.click(); }
+  });
   await sleep(250);
   await page.click('button:has-text("Ask Matt")');
   await sleep(500);
