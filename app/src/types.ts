@@ -1,18 +1,23 @@
+export type WinKind = 'about' | 'answers' | 'column' | 'ask' | 'book'
+
 export interface WindowState {
   id: string
+  kind: WinKind
   title: string
-  kind: 'answers' | 'about' | 'column' | 'ask' | 'book'
   zIndex: number
-  x?: number
-  y?: number
+  x: number
+  y: number
+  minimized: boolean
+  maximized: boolean
 }
 
 export interface AnswerBook {
   id: string
   title: string[]
-  theme: string            // css gradient fallback / spine color
-  cover: string            // /covers/*.jpg artwork
+  theme: string
+  cover: string
   topic: string
-  takeaway: string         // direct-answer style line (format example framing)
+  questionSummary: string
+  takeaway: string
   pages: number
 }

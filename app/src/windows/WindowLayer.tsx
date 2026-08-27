@@ -1,184 +1,163 @@
-import { useEffect, useRef, useState } from 'react'
-import { X } from 'lucide-react'
-import type { WindowState } from '../types'
+import { useRef, useState } from 'react'
+import type { WinKind, WindowState } from '../types'
+import AboutWindow from '../components/AboutWindow'
+import ColumnWindow from '../components/ColumnWindow'
+import AskMattChat from '../components/AskMattChat'
 import BookshelfWindowContent from '../components/BookshelfWindowContent'
 
 interface WindowLayerProps {
   windows: WindowState[]
   onClose: (id: string) => void
   onFocus: (id: string) => void
+  onMinimize: (id: string) => void
+  onToggleMaximize: (id: string) => void
+  openPayload: (kind: WinKind, title: string, payload?: unknown) => void
 }
 
 interface DragState {
   id: string
-  offsetX: number
-  offsetY: number
+  offX: number
+  offY: number
 }
 
-export default function WindowLayer({ windows, onClose, onFocus }: WindowLayerProps) {
+export default function WindowLayer(props: WindowLayerProps) {
+  const { windows, onClose, onFocus, onMinimize, onToggleMaximize } = props
   const [drag, setDrag] = useState<DragState | null>(null)
-  const layerRef = useRef<HTMLDivElement>(null)
+  const dragRef = useRef<DragState | null>(null)
 
-  useEffect(() => {
-    if (!drag) return
-    function onMove(e: PointerEvent) {
-      if (!drag) return
-      const el = document.querySelector<HTMLElement>(`[data-window-id="${drag.id}"]`)
-      if (el) {
-        el.style.left = `${Math.max(8, e.clientX - drag.offsetX)}px`
-        el.style.top = `${Math.max(8, e.clientY - drag.offsetY)}px`
-      }
-    }
-    function onUp() { setDrag(null) }
-    window.addEventListener('pointermove', onMove)
-    window.addEventListener('pointerup', onUp)
-    return () => {
-      window.removeEventListener('pointermove', onMove)
-      window.removeEventListener('pointerup', onUp)
-    }
-  }, [drag])
+  function startDrag(e: React.PointerEvent, w: WindowState) {
+    if (w.maximized) return
+    // window control buttons live inside the title bar; never treat their
+    // presses as drags (pointer capture would eat their click events)
+    if ((e.target as HTMLElement).closest('button')) return
+    const rect = (e.currentTarget.parentElement as HTMLElement).getBoundingClientRect()
+    const d = { id: w.id, offX: e.clientX - rect.left, offY: e.clientY - rect.top }
+    setDrag(d)
+    dragRef.current = d
+    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+  }
+
+  function moveDrag(e: React.PointerEvent) {
+    const d = dragRef.current
+    if (!d) return
+    const el = document.querySelector<HTMLElement>(`[data-window-id="${d.id}"]`)
+    if (!el) return
+    el.style.left = `${Math.max(-200, e.clientX - d.offX)}px`
+    el.style.top = `${Math.max(8, e.clientY - d.offY)}px`
+  }
+
+  function endDrag() {
+    setDrag(null)
+    dragRef.current = null
+  }
 
   return (
-    <div ref={layerRef} className="pointer-events-none fixed inset-0 z-20">
-      {windows.map((w) => (
-        <div
-          key={w.id}
-          data-window-id={w.id}
-          role="dialog"
-          aria-label={w.title}
-          className="pointer-events-auto absolute w-[min(980px,calc(100vw-24px))] overflow-hidden rounded-xl shadow-2xl"
-          style={{
-            left: w.x,
-            top: w.y,
-            zIndex: w.zIndex,
-            background: 'rgba(10, 10, 10, 0.92)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            backdropFilter: 'blur(18px)',
-          }}
-          onPointerDown={() => onFocus(w.id)}
-        >
-          {/* Retro title bar */}
+    <div className="pointer-events-none fixed inset-0 z-20">
+      {windows.filter((w) => !w.minimized).map((w) => {
+        const geo = w.maximized
+          ? { left: 6, top: 42, width: 'calc(100vw - 12px)', height: 'calc(100vh - 96px)' }
+          : undefined
+        return (
           <div
-            className="flex cursor-grab items-center justify-between px-4 py-2.5 active:cursor-grabbing"
+            key={w.id}
+            data-window-id={w.id}
+            role="dialog"
+            aria-label={w.title}
+            className={`pointer-events-auto absolute flex flex-col overflow-hidden rounded-xl shadow-2xl ${drag?.id === w.id ? 'select-none' : ''}`}
             style={{
-              background: 'linear-gradient(180deg, rgba(64,64,64,0.65), rgba(28,28,28,0.85))',
-              borderBottom: '1px solid rgba(255,255,255,0.08)',
+              left: geo ? geo.left : w.x,
+              top: geo ? geo.top : w.y,
+              width: geo ? geo.width : 'min(1080px, calc(100vw - 40px))',
+              height: geo ? geo.height : undefined,
+              maxHeight: geo ? undefined : 'min(78vh, 760px)',
+              minHeight: 340,
+              zIndex: w.zIndex,
+              background: 'rgba(10, 10, 10, 0.92)',
+              border: '1px solid rgba(255,255,255,0.09)',
+              backdropFilter: 'blur(20px)',
+              boxShadow: '0 30px 80px rgba(0,0,0,0.55)',
             }}
-            onPointerDown={(e) => {
-              const el = e.currentTarget.parentElement!
-              const rect = el.getBoundingClientRect()
-              setDrag({ id: w.id, offsetX: e.clientX - rect.left, offsetY: e.clientY - rect.top })
-              onFocus(w.id)
-            }}
+            onPointerDown={() => onFocus(w.id)}
           >
-            <div className="flex items-center gap-2">
-              <span className="h-3 w-3 rounded-full bg-[#DA3F23]" />
-              <span className="h-3 w-3 rounded-full bg-zinc-500" />
-              <span className="h-3 w-3 rounded-full bg-zinc-700" />
-              <span className="ml-2 select-none text-xs font-medium tracking-tight text-zinc-300">{w.title}</span>
-            </div>
-            <button
-              onClick={() => onClose(w.id)}
-              aria-label={`Close ${w.title}`}
-              className="rounded p-1 text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
+            {/* Title bar */}
+            <div
+              className="group flex flex-shrink-0 cursor-grab items-center justify-between px-3 py-2 active:cursor-grabbing"
+              style={{
+                background: 'linear-gradient(180deg, rgba(58,58,60,0.72), rgba(26,26,28,0.9))',
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+              }}
+              onPointerDown={(e) => startDrag(e, w)}
+              onPointerMove={moveDrag}
+              onPointerUp={endDrag}
+              onDoubleClick={() => onToggleMaximize(w.id)}
             >
-              <X size={14} />
-            </button>
+              <div className="flex items-center gap-2">
+                {/* real browser-window buttons */}
+                <button
+                  aria-label={`Close ${w.title}`}
+                  onClick={() => onClose(w.id)}
+                  className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#ff5f57] transition-colors hover:bg-[#ff8a84]"
+                >
+                  <svg viewBox="0 0 10 10" className="h-2 w-2 opacity-0 transition-opacity group-hover:opacity-70">
+                    <path d="M2.5 2.5 L7.5 7.5 M7.5 2.5 L2.5 7.5" stroke="#4d0000" strokeWidth="1.6" strokeLinecap="round" />
+                  </svg>
+                </button>
+                <button
+                  aria-label={`Minimize ${w.title}`}
+                  onClick={() => onMinimize(w.id)}
+                  className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#febc2e] transition-colors hover:bg-[#ffd47a]"
+                >
+                  <svg viewBox="0 0 10 10" className="h-2 w-2 opacity-0 transition-opacity group-hover:opacity-70">
+                    <path d="M2.5 5 H7.5" stroke="#663c00" strokeWidth="1.6" strokeLinecap="round" />
+                  </svg>
+                </button>
+                <button
+                  aria-label={w.maximized ? `Restore ${w.title}` : `Maximize ${w.title}`}
+                  onClick={() => onToggleMaximize(w.id)}
+                  className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#28c840] transition-colors hover:bg-[#5fdd73]"
+                >
+                  <svg viewBox="0 0 10 10" className="h-2 w-2 opacity-0 transition-opacity group-hover:opacity-70">
+                    <path d="M3 3 L7 7 M7 3 L7 7 L3 7" fill="none" stroke="#0a4d14" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                <span className="ml-2 select-none text-xs font-medium tracking-tight text-zinc-300">{w.title}</span>
+              </div>
+              <span className="hidden select-none pr-1 text-[10px] uppercase tracking-[0.2em] text-zinc-600 sm:block">
+                the human answer os
+              </span>
+            </div>
+
+            {/* Body */}
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <WindowBody kind={w.kind} windowId={w.id} openPayload={props.openPayload} />
+            </div>
+
+            {/* status bar */}
+            <div
+              className="flex flex-shrink-0 items-center justify-between px-3 py-1 text-[10px] text-zinc-600"
+              style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+            >
+              <span>{w.title}</span>
+              <span>{w.maximized ? 'maximized' : 'floating'} · double-click title bar to toggle</span>
+            </div>
           </div>
-
-          {/* Body */}
-          <div className="max-h-[min(74vh,720px)] overflow-y-auto">
-            <WindowBody kind={w.kind} />
-          </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
 
-function WindowBody({ kind }: { kind: WindowState['kind'] }) {
-  if (kind === 'answers') return <BookshelfWindowContent embedded />
-  if (kind === 'about') return <AboutBody />
-  if (kind === 'column') return <ColumnBody />
-  if (kind === 'ask') return <AskBody />
-  return null
-}
-
-import { User, Newspaper, Send } from 'lucide-react'
-
-function AboutBody() {
-  return (
-    <div className="px-6 py-6 sm:px-10 sm:py-8">
-      <div className="flex items-center gap-2 text-[#DA3F23]">
-        <User size={16} />
-        <span className="text-xs font-semibold uppercase tracking-widest">Who is writing</span>
-      </div>
-      <h2 className="mt-3 text-2xl font-semibold tracking-tight text-white">Matt — the human behind the answers</h2>
-      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">
-        Years of public answers on Quora under <span className="text-zinc-200">WolfSpirit99</span>, now being collected somewhere permanent.
-        Every answer here leads with lived experience — the story, the mistake, the detail you can only know from being in the room.
-      </p>
-      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-500">
-        The full biography, verified stats and photos land when Matt approves them. Nothing invented in the meantime.
-      </p>
-      <a
-        href="https://www.quora.com/profile/WolfSpirit99"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-zinc-800/70 px-4 py-2 text-sm text-zinc-200 transition-colors hover:bg-zinc-700/70 hover:text-white"
-      >
-        Original profile on Quora ↗
-      </a>
-    </div>
-  )
-}
-
-function ColumnBody() {
-  return (
-    <div className="px-6 py-6 sm:px-10 sm:py-8">
-      <div className="flex items-center gap-2 text-[#DA3F23]">
-        <Newspaper size={16} />
-        <span className="text-xs font-semibold uppercase tracking-widest">The heartbeat</span>
-      </div>
-      <h2 className="mt-3 text-2xl font-semibold tracking-tight text-white">The Living Column</h2>
-      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">
-        You send the question. The strongest one gets the full treatment every week — researched, answered straight, credited to you by first name unless you opt out.
-      </p>
-      <ul className="mt-5 space-y-2 text-sm text-zinc-400">
-        <li>· Direct answer in the first breath</li>
-        <li>· The lived story underneath</li>
-        <li>· No synthesis, no windup, no fluff</li>
-      </ul>
-    </div>
-  )
-}
-
-function AskBody() {
-  const [sent, setSent] = useState(false)
-  return (
-    <div className="px-6 py-6 sm:px-10 sm:py-8">
-      <div className="flex items-center gap-2 text-[#DA3F23]">
-        <Send size={16} />
-        <span className="text-xs font-semibold uppercase tracking-widest">Your question</span>
-      </div>
-      <h2 className="mt-3 text-2xl font-semibold tracking-tight text-white">Ask Matt</h2>
-      {sent ? (
-        <p className="mt-4 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-300">
-          Queued locally in this preview build — inbox sync lands with the email provider.
-        </p>
-      ) : (
-        <form
-          className="mt-4 flex max-w-md flex-col gap-3"
-          onSubmit={(e) => { e.preventDefault(); setSent(true) }}
-        >
-          <input placeholder="Your name (optional)" aria-label="Your name" className="rounded-lg bg-zinc-800/70 px-4 py-2.5 text-sm text-white placeholder-zinc-500 transition-colors focus:outline-none focus:ring-1 focus:ring-zinc-500" />
-          <input required type="email" placeholder="Email (required)" aria-label="Email" className="rounded-lg bg-zinc-800/70 px-4 py-2.5 text-sm text-white placeholder-zinc-500 transition-colors focus:outline-none focus:ring-1 focus:ring-zinc-500" />
-          <textarea required rows={4} placeholder="What do you want to know?" aria-label="Question" className="resize-none rounded-lg bg-zinc-800/70 px-4 py-2.5 text-sm text-white placeholder-zinc-500 transition-colors focus:outline-none focus:ring-1 focus:ring-zinc-500" />
-          <button type="submit" className="self-start rounded-lg bg-white px-5 py-2 text-sm font-semibold text-black transition-colors hover:bg-zinc-100 active:bg-zinc-200">
-            Send it
-          </button>
-        </form>
-      )}
-    </div>
-  )
+function WindowBody({ kind, openPayload }: { kind: WinKind; windowId: string; openPayload: WindowLayerProps['openPayload'] }) {
+  switch (kind) {
+    case 'about':
+      return <AboutWindow />
+    case 'answers':
+      return <BookshelfWindowContent />
+    case 'column':
+      return <ColumnWindow />
+    case 'ask':
+      return <AskMattChat />
+    default:
+      return null
+  }
 }

@@ -30,3 +30,14 @@ Every item below blocks or degrades part of the final spec. Nothing here can be 
 - **sameAs candidates unverified**: youtube.com/@wolfspirit99, x.com/WSpirit99,
   deviantart.com/wolfspirit99 were found in SERPs but are gaming/art accounts whose identity
   was NOT confirmed - deliberately not linked; confirm with Matt before ever adding.
+
+
+## Ask Matt chatbot (added 2026-08-27)
+The chat window runs a LOCAL style-engine (no API, no server): it answers in the
+voice of WolfSpirit99's public writing (direct answer first, lived-story framing,
+dry humor) from an original knowledge base of ~11 topic areas, and it explicitly
+tells any asker "I am an AI in his style - not the man himself." It is NOT yet
+grounded in his verbatim Quora answers because those require the archive export
+(blocker #2 above). When the export lands: (a) replace KB entries one-for-one with
+his actual wording, or (b) switch the engine to a BYO-key model call with the
+export injected as retrieval context. The UI, streaming, and memory are already built.
