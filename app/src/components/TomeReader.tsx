@@ -1,4 +1,4 @@
-import { ExternalLink, CalendarDays, Eye, Clock3, KeyRound } from 'lucide-react'
+import { ExternalLink, CalendarDays, Eye, Clock3, KeyRound, Search } from 'lucide-react'
 
 export interface Tome {
   id: string
@@ -16,14 +16,17 @@ export interface Tome {
 
 export const PROFILE_URL = 'https://www.quora.com/profile/WolfSpirit99'
 
+function googleQuestionUrl(question: string) {
+  return 'https://www.google.com/search?q=' + encodeURIComponent('site:quora.com "' + question + '"')
+}
+
 /**
- * Opened book. Routing policy (verified against live Quora):
- *  - With a real permalink (sourceUrl): one click opens THIS exact answer.
- *  - Without it: we link Matt's PROFILE - the one destination that verifiably
- *    lands logged-out visitors on his page. We do NOT fake per-answer links:
- *    Quora redirects fabricated search URLs to its homepage, and inventing
- *    answer slugs would 404. The permalink wires in one command via the import
- *    script (Quora -> Settings -> Privacy -> Download data).
+ * Opened book. Routing policy (all paths verified against live Quora/Google):
+ *  1. With a real permalink (sourceUrl): one click opens THIS exact answer.
+ *  2. Without it: "Open Matt's Quora profile" (lands, verified) plus
+ *     "Find this exact question" - a site-scoped Google search for the
+ *     question whose #1 result is the thread containing the answer.
+ * We never fabricate slugs: Quora 404s them or redirects to its homepage.
  */
 export default function TomeReader({ tome }: { tome: Tome }) {
   const direct = tome.sourceUrl && /^https:\/\/www\.quora\.com\//.test(tome.sourceUrl) ? tome.sourceUrl : null
@@ -67,21 +70,30 @@ export default function TomeReader({ tome }: { tome: Tome }) {
         </dl>
 
         {direct ? (
-          <a className="tome-source" href={direct} target="_blank" rel="noopener noreferrer">
-            <ExternalLink size={13} />
-            <span>Read this exact answer on Quora</span>
-          </a>
+          <>
+            <a className="tome-source" href={direct} target="_blank" rel="noopener noreferrer">
+              <ExternalLink size={13} />
+              <span>Read this exact answer on Quora</span>
+            </a>
+            <p className="tome-permalink-note">
+              Linked straight to the original post.
+            </p>
+          </>
         ) : (
           <>
-            <a className="tome-source" href={PROFILE_URL} target="_blank" rel="noopener noreferrer">
-              <ExternalLink size={13} />
-              <span>Open Matt&rsquo;s Quora profile</span>
+            <a className="tome-source" href={googleQuestionUrl(tome.questionSummary)} target="_blank" rel="noopener noreferrer"
+               title="Opens a site-scoped search; the thread with this answer is the top result">
+              <Search size={13} />
+              <span>Find this exact question</span>
+            </a>
+            <a className="tome-source-sm" href={PROFILE_URL} target="_blank" rel="noopener noreferrer">
+              or open Matt&rsquo;s profile ↗
             </a>
             <p className="tome-permalink-note">
               <KeyRound size={11} />
-              This book&rsquo;s one-click link to the <em>exact</em> answer unlocks
-              with Matt&rsquo;s archive export (it carries every permalink). His
-              profile above is the verified way in today.
+              Quora serves question pages only to logged-in visitors, so the
+              direct permalink unlocks with Matt&rsquo;s archive export &mdash; then
+              every book hard-links its own answer.
             </p>
           </>
         )}
@@ -89,7 +101,7 @@ export default function TomeReader({ tome }: { tome: Tome }) {
         <p className="tome-note">
           {direct
             ? 'Links directly to the original Quora post for this answer.'
-            : 'Edition text is this shelf\u2019s full rendering of the answer; the verbatim post lives on Matt\u2019s profile.'}
+            : 'Edition text is this shelf\u2019s full rendering of the answer; the verbatim post lives on Quora.'}
         </p>
       </div>
     </div>

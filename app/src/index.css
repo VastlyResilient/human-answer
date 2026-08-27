@@ -255,7 +255,7 @@ body { background: #000; }
 /* ================= Cursor discipline: arrow, not pointer-hand ================= */
 /* Per Bobby: hovering interactive app chrome keeps the default arrow.
    Native controls (text inputs, textareas) keep text beams. */
-button, .book, .book-wrap, .sight-nav, .tome-source, .taskbar-btn,
+button, .book, .book-wrap, .sight-nav, .tome-source, .tome-source-sm, .taskbar-btn,
 .desktop-icon, [role='button'] {
   cursor: default;
 }
