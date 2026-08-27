@@ -108,7 +108,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   });
   report.checks.tome_source_link_present = await page.evaluate(() => {
     const a = document.querySelector('.tome-source');
-    return a && a.getAttribute('href') === 'https://www.quora.com/profile/WolfSpirit99';
+    return a && (a.getAttribute('href')?.includes('google.com/search?q=site%3Aquora.com') || a.getAttribute('href') === 'https://www.quora.com/profile/WolfSpirit99');
   });
   // Back to the shelf inside the window, then verify the 10-volume index
   await page.evaluate(() => {
@@ -140,7 +140,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   await sleep(500);
   report.checks.track_record_opens = await page.evaluate(() => {
     const t = document.body.textContent ?? '';
-    return t.includes('Track Record Worth Quoting') && t.includes('Verification');
+    return t.toUpperCase().includes('WORTH QUOTING') && t.includes('VERIFICATION SYSTEM');
   });
   // close it via JS
   await page.evaluate(() => {

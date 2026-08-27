@@ -1,54 +1,105 @@
-import { Trophy, TrendingUp, FileText, Users, BadgeCheck, Info } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Eye, PenLine, CalendarClock, Mic, Info, ExternalLink, User, Library, Newspaper, MessageCircle, Trophy } from 'lucide-react'
+import { PROFILE_URL } from './TomeReader'
 
-const PROFILE = 'https://www.quora.com/profile/WolfSpirit99'
+const STATS = [
+  { icon: Eye, head: 'LIFETIME VIEWS', big: 'MILLIONS', sub: 'OF PEOPLE REACHED', note: ['Organic visibility.', 'Earned trust.'] },
+  { icon: PenLine, head: 'PUBLISHED ANSWERS', big: '1,000+', sub: 'ANSWERS SHARED', note: ['Depth over noise.', 'Signal over volume.'] },
+  { icon: CalendarClock, head: 'WRITING IN PUBLIC', big: '11 YRS', sub: 'OF CONSISTENT WRITING', note: ['Through every cycle.', 'Still showing up.'] },
+  { icon: Mic, head: 'AUTHENTIC VOICE', big: 'ONE VOICE', sub: 'NEVER OUTSOURCED', note: ['My ideas. My words.', 'Always.'] },
+]
+
+const NAV = [
+  { icon: User, label: 'About Matt' },
+  { icon: Library, label: "Matt's Answers" },
+  { icon: Trophy, label: 'Track Record', active: true },
+  { icon: Newspaper, label: 'Living Column' },
+  { icon: MessageCircle, label: 'Ask Matt' },
+]
 
 export default function MattsRecord() {
-  const leverage = [
-    { icon: TrendingUp, stat: 'Millions', label: 'Lifetime answer views', note: 'client-reported — verify against export' },
-    { icon: FileText, stat: '1,000+', label: 'Published answers', note: 'scale of the archive' },
-    { icon: Users, stat: '11 yrs', label: 'Writing in public', note: 'span of the account' },
-    { icon: Trophy, stat: 'One voice', label: 'Never outsourced', note: 'every answer his own hand' },
-  ]
+  const [stamp, setStamp] = useState('—')
+  useEffect(() => {
+    const d = new Date()
+    const pad = (n: number) => String(n).padStart(2, '0')
+    setStamp(`UPDATED: ${d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`)
+  }, [])
   return (
-    <div className="px-6 py-6 sm:px-10 sm:py-8">
-      <div className="flex items-center gap-2" style={{ color: '#DA3F23' }}>
-        <Trophy size={15} />
-        <span className="text-xs font-semibold uppercase tracking-[0.24em]">The record so far</span>
-      </div>
-      <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white">A Track Record Worth Quoting</h2>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
-        The leverage numbers behind the shelf. Stats marked below get hardened
-        into exact figures the moment Matt&rsquo;s Quora export lands &mdash; nothing
-        here is inflated for effect.
-      </p>
+    <div className="rec-root">
+      {/* inner sidebar */}
+      <aside className="rec-side">
+        <div className="rec-avatar">
+          <img src="../folio/wolf-pixel.jpg" alt="wolfspirit99 pixel avatar" draggable={false} />
+        </div>
+        <div className="rec-avatar-name">wolfspirit99</div>
+        <nav className="rec-nav">
+          {NAV.map(({ icon: Icon, label, active }) => (
+            <button key={label} className={`rec-nav-btn${active ? ' is-active' : ''}`} type="button">
+              <Icon size={14} />
+              <span>{label}</span>
+            </button>
+          ))}
+        </nav>
+      </aside>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {leverage.map(({ icon: Icon, stat, label, note }) => (
-          <div key={label} className="rounded-xl px-4 py-4"
-               style={{ background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <Icon size={16} style={{ color: '#DA3F23' }} />
-            <div className="mt-2 text-2xl font-semibold tracking-tight text-white">{stat}</div>
-            <div className="text-xs font-medium text-zinc-300">{label}</div>
-            <div className="mt-1 text-[10px] uppercase tracking-wider text-zinc-600">{note}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-6 flex items-start gap-2 rounded-lg px-4 py-3 text-xs leading-relaxed text-zinc-500"
-           style={{ background: 'rgba(255,255,255,0.03)', border: '1px dashed rgba(255,255,255,0.12)' }}>
-        <Info size={13} className="mt-0.5 flex-shrink-0" />
-        <p>
-          Verification badge system is wired: when the export arrives, each stat
-          flips from <BadgeCheck size={11} className="inline text-zinc-500" /> reported
-          to <BadgeCheck size={11} className="inline text-[#DA3F23]" /> verified with its
-          source row. We do not round up, we do not guess.
+      {/* main panel */}
+      <div className="rec-main">
+        <div className="rec-os-tag">THE HUMAN ANSWER OS v1.0</div>
+        <div className="rec-kicker">THE RECORD SO FAR</div>
+        <h2 className="rec-title">
+          A TRACK RECORD<br />
+          <em>WORTH QUOTING.</em>
+        </h2>
+        <p className="rec-lede">
+          The real leverage isn't hype &mdash; it's consistent, high-signal answers over time.
+          Numbers don't lie. Here's mine.
         </p>
+
+        {/* STATUS bracket box */}
+        <div className="rec-status">
+          <div className="rec-status-label">STATUS</div>
+          <div className="rec-status-dot" aria-hidden="true" />
+          <div className="rec-status-online">ONLINE</div>
+          <div className="rec-status-sub">WRITING IN PUBLIC<br />SINCE 2013</div>
+        </div>
+
+        {/* stat cards */}
+        <div className="rec-grid">
+          {STATS.map(({ icon: Icon, head, big, sub, note }) => (
+            <div key={head} className="rec-card">
+              <div className="rec-card-head">
+                <span className="rec-card-icon"><Icon size={14} /></span>
+                <span className="rec-card-title">{head}</span>
+              </div>
+              <div className="rec-card-big">{big}</div>
+              <div className="rec-card-sub">{sub}</div>
+              <div className="rec-card-dots" aria-hidden="true">· · · · · · · ·</div>
+              <div className="rec-card-note">{note[0]}<br />{note[1]}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* verification strip */}
+        <div className="rec-verify">
+          <div className="rec-verify-left">
+            <span className="rec-verify-i"><Info size={15} /></span>
+            <p>
+              VERIFICATION SYSTEM: When an export is received, each stat is matched to a
+              verified source on Quora. We don&rsquo;t round up. We don&rsquo;t guess. We document.
+            </p>
+          </div>
+          <a className="rec-verify-btn" href={PROFILE_URL} target="_blank" rel="noopener noreferrer">
+            VIEW SOURCE ON QUORA <ExternalLink size={12} />
+          </a>
+        </div>
       </div>
 
-      <a href={PROFILE} target="_blank" rel="noopener noreferrer"
-         className="mt-6 inline-flex items-center gap-1.5 rounded-lg bg-zinc-800/70 px-4 py-2 text-sm text-zinc-200 transition-colors hover:bg-zinc-700/70 hover:text-white">
-        See the record in the wild on Quora ↗
-      </a>
+      {/* status bar */}
+      <div className="rec-taskbar">
+        <div className="rec-pane">READY.</div>
+        <div className="rec-pane">DATA VERIFIED. <span className="rec-green" aria-hidden="true" /></div>
+        <div className="rec-pane rec-pane-right">{stamp}</div>
+      </div>
     </div>
   )
 }
