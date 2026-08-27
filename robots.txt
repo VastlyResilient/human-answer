@@ -1,8 +1,11 @@
 # The Human Answer - every legitimate crawler welcome, AI engines explicitly included.
 # The entire strategy is to be read, quoted, and cited by name.
+# /answers.html carries labeled format examples only until Matt's corpus lands,
+# so it is withheld from indexes (meta noindex as well) per the no-fabrication rule.
 
 User-agent: *
 Allow: /
+Disallow: /answers.html
 
 User-agent: GPTBot
 Allow: /

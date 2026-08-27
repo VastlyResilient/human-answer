@@ -109,6 +109,15 @@ async function scrubAndRead(page, scrollY, shotName) {
   const railH = await page.evaluate(() => document.querySelector(".after-rail").getBoundingClientRect());
   report.after_rail_h = railH.height;
 
+
+  // ---------- Wallpaper removal check on home ----------
+  report.wallpaper_removed = await page.evaluate(() => ({
+    video_tags: document.querySelectorAll("video").length,
+    sky_imgs: document.querySelectorAll(".sky-img").length,
+    world_bg: getComputedStyle(document.querySelector(".world")).backgroundColor,
+    figma_sky_url_present: document.body.innerHTML.includes("16b5007d9c93971e26ffe4e0e3e37946f6bd538c"),
+  }));
+
   await ctx.close();
 
   // ---------- Reduced motion pass ----------
@@ -147,6 +156,25 @@ async function scrubAndRead(page, scrollY, shotName) {
   await mp.evaluate(() => window.scrollTo(0, 3760)); await sleep(1400);
   await mp.screenshot({ path: path.join(QA, "mobile-sights.png") });
   await mCtx.close();
+
+  // ---------- Answers page pass ----------
+  const ansCtx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const ap = { c: ansCtx, pg: await ansCtx.newPage() };
+  await ap.pg.goto(SITE.replace(/index\.html$/, "") + "answers.html", { waitUntil: "load", timeout: 60000 });
+  report.answers_page = await ap.pg.evaluate(() => ({
+    topics: document.querySelectorAll(".topic-section").length,
+    cards: document.querySelectorAll("[data-answer]").length,
+    sample_tags_labeled: document.querySelectorAll(".sample-tag").length,
+    unlabeled_cards: Array.from(document.querySelectorAll("[data-answer]")).filter(c => !c.querySelector(".sample-tag")).length,
+    noindex: !!document.querySelector('meta[name="robots"][content*="noindex"]'),
+    nav_link_back: !!document.querySelector('a.back-home[href="index.html"]'),
+  }));
+  // search filter works?
+  await ap.pg.fill("#q", "column");
+  await new Promise(r => setTimeout(r, 300));
+  report.answers_search = await ap.pg.evaluate(() => document.getElementById("search-note").textContent);
+  await ap.pg.screenshot({ path: path.join(QA, "answers-page.png") });
+  await ap.c.close();
 
   await browser.close();
   fs.writeFileSync(path.join(QA, "probe-report.json"), JSON.stringify(report, null, 1));

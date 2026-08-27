@@ -460,6 +460,104 @@ button { border: 0; font: inherit }
   .hero-title { font-size: min(7.2vw, 96px); top: clamp(76px, 11vh, 112px) }
 }
 
+
+/* ---------- Answers page (answers.html) ---------- */
+body.answers-body { background: #0b1110 }
+.answers-wrap {
+  max-width: 1120px; margin: 0 auto; padding: 40px 24px 80px;
+}
+.answers-header {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 14px;
+  justify-content: space-between; margin-bottom: 34px;
+}
+.answers-header .site-logo { font-size: 22px }
+.back-home {
+  color: rgba(253, 241, 225, 0.75); text-decoration: none;
+  font-size: 14px; border: 1px solid rgba(253, 241, 225, 0.25);
+  border-radius: 999px; padding: 9px 16px;
+}
+.back-home:hover { color: #fdf1e1; border-color: rgba(253, 241, 225, 0.6) }
+.answers-title {
+  font-family: "Ogg Medium", Georgia, serif; font-weight: 500;
+  font-size: clamp(2.6rem, 6vw, 4.4rem); line-height: 0.95;
+  margin: 10px 0 10px; color: #fdf1e1;
+}
+.answers-sub { color: rgba(253, 241, 225, 0.72); max-width: 62ch; line-height: 1.5 }
+.preview-chip {
+  display: inline-block; margin-left: 12px; vertical-align: middle;
+  background: rgba(74, 181, 224, 0.15); color: #9fd8ef;
+  border: 1px solid rgba(74, 181, 224, 0.45);
+  border-radius: 999px; padding: 5px 13px;
+  font-size: 11px; font-weight: 800; letter-spacing: 0.12em;
+}
+.archive-search {
+  margin: 30px 0 8px; display: flex; gap: 8px; max-width: 520px;
+}
+.archive-search input {
+  flex: 1; height: 46px; padding: 0 18px; border-radius: 999px;
+  border: 1px solid rgba(253, 241, 225, 0.32);
+  background: rgba(253, 241, 225, 0.06); color: #fdf1e1;
+  font: inherit; outline: none;
+}
+.archive-search input:focus-visible { border-color: rgba(253, 241, 225, 0.85); box-shadow: 0 0 0 3px rgba(74, 181, 224, 0.35) }
+.archive-search input::placeholder { color: rgba(253, 241, 225, 0.55) }
+.search-note { color: rgba(253, 241, 225, 0.55); font-size: 0.88rem; min-height: 1.3em }
+
+.topic-section { margin-top: 46px }
+.topic-head {
+  display: flex; align-items: baseline; gap: 14px;
+  border-bottom: 1px solid rgba(253, 241, 225, 0.16);
+  padding-bottom: 10px; margin-bottom: 20px;
+}
+.topic-head h2 {
+  font-family: "Ogg Medium", Georgia, serif; font-weight: 500;
+  font-size: clamp(1.6rem, 3vw, 2.2rem); margin: 0; color: #fdf1e1;
+}
+.topic-count { color: rgba(74, 181, 224, 0.95); font-size: 12px; letter-spacing: 0.14em; font-weight: 800 }
+.answer-card {
+  position: relative;
+  border: 1px solid rgba(253, 241, 225, 0.18);
+  border-radius: 22px; padding: 26px 28px 22px;
+  background: linear-gradient(180deg, rgba(253, 241, 225, 0.055), rgba(253, 241, 225, 0.02));
+  margin-bottom: 18px;
+}
+.answer-card .sample-tag {
+  position: absolute; top: 20px; right: 22px;
+  background: rgba(74, 181, 224, 0.16); color: #9fd8ef;
+  border: 1px solid rgba(74, 181, 224, 0.4);
+  border-radius: 999px; padding: 3px 10px;
+  font-size: 10px; font-weight: 800; letter-spacing: 0.11em;
+}
+.answer-card h3 {
+  font-family: "Ogg Medium", Georgia, serif; font-weight: 500;
+  font-size: clamp(1.35rem, 2.4vw, 1.8rem);
+  margin: 0 90px 12px 0; line-height: 1.08; color: #fdf1e1;
+}
+.answer-card .direct {
+  margin: 0 0 12px; color: #fdf1e1; font-weight: 600; line-height: 1.45;
+}
+.answer-card p { margin: 0 0 12px; color: rgba(253, 241, 225, 0.82); line-height: 1.55 }
+.answer-meta {
+  display: flex; flex-wrap: wrap; gap: 10px 18px;
+  margin-top: 8px; padding-top: 12px;
+  border-top: 1px dashed rgba(253, 241, 225, 0.16);
+  color: rgba(253, 241, 225, 0.55); font-size: 0.86rem;
+}
+.hand-footer {
+  margin-top: 64px; padding-top: 24px;
+  border-top: 1px solid rgba(253, 241, 225, 0.14);
+  display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: baseline;
+  justify-content: space-between;
+}
+.hand-footer .hand-line { margin: 0 }
+@media (max-width: 640px) {
+  .answers-wrap { padding: 26px 16px 60px }
+  .answer-card { padding: 20px 18px }
+  .answer-card h3 { margin-right: 0 }
+  .sample-tag { position: static; display: inline-block; margin-bottom: 12px }
+}
+
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto }
   .scene-img, .back-stack, .hero-title, .intro-copy,
