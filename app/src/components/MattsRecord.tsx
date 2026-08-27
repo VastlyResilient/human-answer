@@ -3,10 +3,10 @@ import { Eye, PenLine, CalendarClock, Mic, Info, ExternalLink, User, Library, Ne
 import { PROFILE_URL } from './TomeReader'
 
 const STATS = [
-  { icon: Eye, head: 'LIFETIME VIEWS', big: 'MILLIONS', sub: 'OF PEOPLE REACHED', note: ['Organic visibility.', 'Earned trust.'] },
+  { icon: Eye, head: 'LIFETIME VIEWS', big: 'Millions', sub: 'OF PEOPLE REACHED', note: ['Organic visibility.', 'Earned trust.'] },
   { icon: PenLine, head: 'PUBLISHED ANSWERS', big: '1,000+', sub: 'ANSWERS SHARED', note: ['Depth over noise.', 'Signal over volume.'] },
-  { icon: CalendarClock, head: 'WRITING IN PUBLIC', big: '11 YRS', sub: 'OF CONSISTENT WRITING', note: ['Through every cycle.', 'Still showing up.'] },
-  { icon: Mic, head: 'AUTHENTIC VOICE', big: 'ONE VOICE', sub: 'NEVER OUTSOURCED', note: ['My ideas. My words.', 'Always.'] },
+  { icon: CalendarClock, head: 'WRITING IN PUBLIC', big: '11 yrs', sub: 'OF CONSISTENT WRITING', note: ['Through every cycle.', 'Still showing up.'] },
+  { icon: Mic, head: 'AUTHENTIC VOICE', big: 'One voice', sub: 'NEVER OUTSOURCED', note: ['My ideas. My words.', 'Always.'] },
 ]
 
 const NAV = [
@@ -22,45 +22,55 @@ export default function MattsRecord() {
   useEffect(() => {
     const d = new Date()
     const pad = (n: number) => String(n).padStart(2, '0')
-    setStamp(`UPDATED: ${d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`)
+    setStamp(`UPDATED ${d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase()} · ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`)
   }, [])
+
   return (
     <div className="rec-root">
-      {/* inner sidebar */}
+      {/* ambient surreal wash */}
+      <div className="rec-aurora" aria-hidden="true" />
+      <div className="rec-scanlines" aria-hidden="true" />
+
+      {/* sidebar */}
       <aside className="rec-side">
         <div className="rec-avatar">
-          <img src="../folio/wolf-pixel.jpg" alt="wolfspirit99 pixel avatar" draggable={false} />
+          <img src="../folio/wolf-pixel.jpg" alt="wolfspirit99 emblem" draggable={false} />
+          <span className="rec-avatar-ring" aria-hidden="true" />
         </div>
         <div className="rec-avatar-name">wolfspirit99</div>
         <nav className="rec-nav">
           {NAV.map(({ icon: Icon, label, active }) => (
-            <button key={label} className={`rec-nav-btn${active ? ' is-active' : ''}`} type="button">
-              <Icon size={14} />
+            <button key={label} type="button" className={`rec-nav-btn${active ? ' is-active' : ''}`}>
+              <Icon size={13} strokeWidth={1.75} />
               <span>{label}</span>
             </button>
           ))}
         </nav>
+        <div className="rec-side-foot">EST. 2013</div>
       </aside>
 
-      {/* main panel */}
+      {/* main */}
       <div className="rec-main">
-        <div className="rec-os-tag">THE HUMAN ANSWER OS v1.0</div>
-        <div className="rec-kicker">THE RECORD SO FAR</div>
+        <div className="rec-os-tag">THE HUMAN ANSWER OS <span>v1.0</span></div>
+
+        <div className="rec-kicker"><span className="rec-kicker-dash" />THE RECORD SO FAR</div>
         <h2 className="rec-title">
-          A TRACK RECORD<br />
-          <em>WORTH QUOTING.</em>
+          A track record<br /><em>worth quoting.</em>
         </h2>
         <p className="rec-lede">
-          The real leverage isn't hype &mdash; it's consistent, high-signal answers over time.
-          Numbers don't lie. Here's mine.
+          The real leverage isn&rsquo;t hype &mdash; it&rsquo;s consistent, high-signal answers
+          over time. Numbers don&rsquo;t lie. Here&rsquo;s mine.
         </p>
 
-        {/* STATUS bracket box */}
+        {/* status bracket */}
         <div className="rec-status">
+          <span className="rec-corner tl" aria-hidden="true" />
+          <span className="rec-corner tr" aria-hidden="true" />
+          <span className="rec-corner bl" aria-hidden="true" />
+          <span className="rec-corner br" aria-hidden="true" />
           <div className="rec-status-label">STATUS</div>
-          <div className="rec-status-dot" aria-hidden="true" />
-          <div className="rec-status-online">ONLINE</div>
-          <div className="rec-status-sub">WRITING IN PUBLIC<br />SINCE 2013</div>
+          <div className="rec-status-online"><span className="rec-status-dot" />Online</div>
+          <div className="rec-status-sub">Writing in public<br />since 2013</div>
         </div>
 
         {/* stat cards */}
@@ -68,12 +78,12 @@ export default function MattsRecord() {
           {STATS.map(({ icon: Icon, head, big, sub, note }) => (
             <div key={head} className="rec-card">
               <div className="rec-card-head">
-                <span className="rec-card-icon"><Icon size={14} /></span>
+                <span className="rec-card-icon"><Icon size={13} strokeWidth={1.75} /></span>
                 <span className="rec-card-title">{head}</span>
               </div>
               <div className="rec-card-big">{big}</div>
               <div className="rec-card-sub">{sub}</div>
-              <div className="rec-card-dots" aria-hidden="true">· · · · · · · ·</div>
+              <div className="rec-card-rule" aria-hidden="true" />
               <div className="rec-card-note">{note[0]}<br />{note[1]}</div>
             </div>
           ))}
@@ -82,22 +92,22 @@ export default function MattsRecord() {
         {/* verification strip */}
         <div className="rec-verify">
           <div className="rec-verify-left">
-            <span className="rec-verify-i"><Info size={15} /></span>
+            <span className="rec-verify-i"><Info size={14} /></span>
             <p>
-              VERIFICATION SYSTEM: When an export is received, each stat is matched to a
-              verified source on Quora. We don&rsquo;t round up. We don&rsquo;t guess. We document.
+              <strong>Verification system.</strong> When an export is received, each stat is matched
+              to a verified source on Quora. We don&rsquo;t round up. We don&rsquo;t guess. We document.
             </p>
           </div>
           <a className="rec-verify-btn" href={PROFILE_URL} target="_blank" rel="noopener noreferrer">
-            VIEW SOURCE ON QUORA <ExternalLink size={12} />
+            View source on Quora <ExternalLink size={12} />
           </a>
         </div>
       </div>
 
       {/* status bar */}
       <div className="rec-taskbar">
-        <div className="rec-pane">READY.</div>
-        <div className="rec-pane">DATA VERIFIED. <span className="rec-green" aria-hidden="true" /></div>
+        <div className="rec-pane"><span className="rec-panedot ok" />Ready</div>
+        <div className="rec-pane"><span className="rec-panedot ok" />Data verified</div>
         <div className="rec-pane rec-pane-right">{stamp}</div>
       </div>
     </div>

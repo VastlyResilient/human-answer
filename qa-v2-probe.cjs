@@ -140,7 +140,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   await sleep(500);
   report.checks.track_record_opens = await page.evaluate(() => {
     const t = document.body.textContent ?? '';
-    return t.toUpperCase().includes('WORTH QUOTING') && t.includes('VERIFICATION SYSTEM');
+    return t.toUpperCase().includes('WORTH QUOTING') && /verification system/i.test(t);
   });
   // close it via JS
   await page.evaluate(() => {
