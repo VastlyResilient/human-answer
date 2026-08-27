@@ -46,10 +46,16 @@ export default function MattsRecord() {
         {/* sidebar */}
         <aside className="rec-side">
           <div className="rec-avatar">
-            <img src="../folio/wolf-pixel.jpg" alt="wolfspirit99 emblem" draggable={false} />
+            {/* USER TILE: swap src to matt-profile.jpg when the export (which
+                includes his profile photo) or a photo file lands. Pixelation
+                + CRT scanlines apply via CSS either way. */}
+            <img src="../folio/wolf-pixel.jpg" alt="wolfspirit99 avatar" draggable={false} />
+            <span className="rec-avatar-scan" aria-hidden="true" />
             <span className="rec-avatar-ring" aria-hidden="true" />
+            <span className="rec-avatar-presence" title="Online" aria-hidden="true" />
           </div>
           <div className="rec-avatar-name">wolfspirit99</div>
+          <div className="rec-avatar-role">ANSWER ARCHIVE</div>
           <nav className="rec-nav">
             {NAV.map(({ icon: Icon, label, active }) => (
               <button key={label} type="button" className={`rec-nav-btn${active ? ' is-active' : ''}`}>
