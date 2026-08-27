@@ -1,0 +1,31 @@
+# The Human Answer - every legitimate crawler welcome, AI engines explicitly included.
+# The entire strategy is to be read, quoted, and cited by name.
+
+User-agent: *
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+Sitemap: https://vastlyresilient.github.io/human-answer/sitemap.xml
