@@ -27,84 +27,100 @@ export default function MattsRecord() {
 
   return (
     <div className="rec-root">
-      {/* ambient surreal wash */}
       <div className="rec-aurora" aria-hidden="true" />
       <div className="rec-scanlines" aria-hidden="true" />
 
-      {/* sidebar */}
-      <aside className="rec-side">
-        <div className="rec-avatar">
-          <img src="../folio/wolf-pixel.jpg" alt="wolfspirit99 emblem" draggable={false} />
-          <span className="rec-avatar-ring" aria-hidden="true" />
-        </div>
-        <div className="rec-avatar-name">wolfspirit99</div>
-        <nav className="rec-nav">
-          {NAV.map(({ icon: Icon, label, active }) => (
-            <button key={label} type="button" className={`rec-nav-btn${active ? ' is-active' : ''}`}>
-              <Icon size={13} strokeWidth={1.75} />
-              <span>{label}</span>
-            </button>
-          ))}
-        </nav>
-        <div className="rec-side-foot">EST. 2013</div>
-      </aside>
+      {/* ---- inner Win98 titlebar (decorative chrome) ---- */}
+      <div className="rec-titlebar" aria-hidden="true">
+        <span className="rec-tb-icon"><Trophy size={11} /></span>
+        <span className="rec-tb-text">track_record.exe — Track Record</span>
+        <span className="rec-tb-btns">
+          <span className="rec-tb-btn">_</span>
+          <span className="rec-tb-btn">□</span>
+          <span className="rec-tb-btn rec-tb-x">×</span>
+        </span>
+      </div>
 
-      {/* main */}
-      <div className="rec-main">
-        <div className="rec-os-tag">THE HUMAN ANSWER OS <span>v1.0</span></div>
-
-        <div className="rec-kicker"><span className="rec-kicker-dash" />THE RECORD SO FAR</div>
-        <h2 className="rec-title">
-          A track record<br /><em>worth quoting.</em>
-        </h2>
-        <p className="rec-lede">
-          The real leverage isn&rsquo;t hype &mdash; it&rsquo;s consistent, high-signal answers
-          over time. Numbers don&rsquo;t lie. Here&rsquo;s mine.
-        </p>
-
-        {/* status bracket */}
-        <div className="rec-status">
-          <span className="rec-corner tl" aria-hidden="true" />
-          <span className="rec-corner tr" aria-hidden="true" />
-          <span className="rec-corner bl" aria-hidden="true" />
-          <span className="rec-corner br" aria-hidden="true" />
-          <div className="rec-status-label">STATUS</div>
-          <div className="rec-status-online"><span className="rec-status-dot" />Online</div>
-          <div className="rec-status-sub">Writing in public<br />since 2013</div>
-        </div>
-
-        {/* stat cards */}
-        <div className="rec-grid">
-          {STATS.map(({ icon: Icon, head, big, sub, note }) => (
-            <div key={head} className="rec-card">
-              <div className="rec-card-head">
-                <span className="rec-card-icon"><Icon size={13} strokeWidth={1.75} /></span>
-                <span className="rec-card-title">{head}</span>
-              </div>
-              <div className="rec-card-big">{big}</div>
-              <div className="rec-card-sub">{sub}</div>
-              <div className="rec-card-rule" aria-hidden="true" />
-              <div className="rec-card-note">{note[0]}<br />{note[1]}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* verification strip */}
-        <div className="rec-verify">
-          <div className="rec-verify-left">
-            <span className="rec-verify-i"><Info size={14} /></span>
-            <p>
-              <strong>Verification system.</strong> When an export is received, each stat is matched
-              to a verified source on Quora. We don&rsquo;t round up. We don&rsquo;t guess. We document.
-            </p>
+      {/* ---- body grid ---- */}
+      <div className="rec-body">
+        {/* sidebar */}
+        <aside className="rec-side">
+          <div className="rec-avatar">
+            <img src="../folio/wolf-pixel.jpg" alt="wolfspirit99 emblem" draggable={false} />
+            <span className="rec-avatar-ring" aria-hidden="true" />
           </div>
-          <a className="rec-verify-btn" href={PROFILE_URL} target="_blank" rel="noopener noreferrer">
-            View source on Quora <ExternalLink size={12} />
-          </a>
+          <div className="rec-avatar-name">wolfspirit99</div>
+          <nav className="rec-nav">
+            {NAV.map(({ icon: Icon, label, active }) => (
+              <button key={label} type="button" className={`rec-nav-btn${active ? ' is-active' : ''}`}>
+                <Icon size={13} strokeWidth={1.75} />
+                <span>{label}</span>
+              </button>
+            ))}
+          </nav>
+          <div className="rec-side-foot">EST. 2013</div>
+        </aside>
+
+        {/* main */}
+        <div className="rec-main">
+          <div className="rec-os-tag">THE HUMAN ANSWER OS <span>v1.0</span></div>
+
+          <div className="rec-kicker"><span className="rec-kicker-dash" />THE RECORD SO FAR</div>
+          <h2 className="rec-title">
+            A track record<br /><em>worth quoting.</em>
+          </h2>
+          <p className="rec-lede">
+            The real leverage isn&rsquo;t hype &mdash; it&rsquo;s consistent, high-signal answers
+            over time. Numbers don&rsquo;t lie. Here&rsquo;s mine.
+          </p>
+
+          {/* sunken status well with corner ticks */}
+          <div className="rec-status">
+            <span className="rec-corner tl" aria-hidden="true" />
+            <span className="rec-corner tr" aria-hidden="true" />
+            <span className="rec-corner bl" aria-hidden="true" />
+            <span className="rec-corner br" aria-hidden="true" />
+            <div className="rec-status-label">STATUS</div>
+            <div className="rec-status-online"><span className="rec-status-dot" />Online</div>
+            <div className="rec-status-sub">Writing in public<br />since 2013</div>
+          </div>
+
+          {/* classic groupbox with cut legend */}
+          <div className="rec-groupbox">
+            <span className="rec-group-legend">PERFORMANCE LEDGER</span>
+            <div className="rec-grid">
+              {STATS.map(({ icon: Icon, head, big, sub, note }) => (
+                <div key={head} className="rec-card">
+                  <div className="rec-card-head">
+                    <span className="rec-card-icon"><Icon size={13} strokeWidth={1.75} /></span>
+                    <span className="rec-card-title">{head}</span>
+                  </div>
+                  <div className="rec-card-big">{big}</div>
+                  <div className="rec-card-sub">{sub}</div>
+                  <div className="rec-card-rule" aria-hidden="true" />
+                  <div className="rec-card-note">{note[0]}<br />{note[1]}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* recessed verification field */}
+          <div className="rec-verify">
+            <div className="rec-verify-left">
+              <span className="rec-verify-i"><Info size={14} /></span>
+              <p>
+                <strong>Verification system.</strong> When an export is received, each stat is matched
+                to a verified source on Quora. We don&rsquo;t round up. We don&rsquo;t guess. We document.
+              </p>
+            </div>
+            <a className="rec-verify-btn" href={PROFILE_URL} target="_blank" rel="noopener noreferrer">
+              View source on Quora <ExternalLink size={12} />
+            </a>
+          </div>
         </div>
       </div>
 
-      {/* status bar */}
+      {/* ---- sunken status bar ---- */}
       <div className="rec-taskbar">
         <div className="rec-pane"><span className="rec-panedot ok" />Ready</div>
         <div className="rec-pane"><span className="rec-panedot ok" />Data verified</div>
