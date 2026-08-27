@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/booksdata.ts","./src/main.tsx","./src/types.ts","./src/vite-env.d.ts","./src/components/bookshelfwindowcontent.tsx","./src/components/dockmenu.tsx","./src/components/logo.tsx","./src/components/signupcard.tsx","./src/components/videobackground.tsx","./src/windows/windowlayer.tsx"],"version":"5.6.3"}
