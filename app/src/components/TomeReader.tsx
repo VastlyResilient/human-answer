@@ -9,6 +9,8 @@ export interface Tome {
   date?: string
   views?: string
   reads?: string
+  /** Engraved plate artwork for this volume's right page */
+  plate?: string
   /** Direct URL to THIS answer on Quora. Set automatically by
    *  scripts/import-answers.mjs once Matt's export lands. */
   sourceUrl?: string | null
@@ -57,7 +59,11 @@ export default function TomeReader({ tome }: { tome: Tome }) {
       {/* RIGHT PAGE */}
       <div className="tome-page tome-right">
         <div className="tome-plate">
-          <img src="../folio/plate-generic.png" alt="Engraved illustration plate" draggable={false} />
+          <img
+            src={tome.plate ?? '../folio/plate-generic.png'}
+            alt={`Engraved illustration plate for ${tome.title.join(' ')}`}
+            draggable={false}
+          />
         </div>
         <dl className="tome-meta">
           {tome.date && (

@@ -22,4 +22,6 @@ export interface AnswerBook {
   pages: number
   /** Direct Quora permalink for THIS answer (set by import-answers.mjs) */
   sourceUrl?: string | null
+  /** Engraved plate image shown on the opened book's right page */
+  plate?: string
 }
