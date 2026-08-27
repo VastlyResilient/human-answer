@@ -1,5 +1,8 @@
 import type { AnswerBook } from './types'
 
+// sourceUrl: per-answer Quora permalink. null until scripts/import-answers.mjs
+// runs with Matt's export (then every tome hard-links its own answer URL).
+
 // THE SHELF - preview editions carrying FULL original answers written in the
 // public style of WolfSpirit99 (direct answer first, story underneath, dry wit).
 // They are NOT verbatim Quora posts. Architecture: every slot maps 1:1 to a
@@ -16,6 +19,7 @@ export const ANSWER_TOMES: (AnswerBook & { answer: string[]; date?: string; view
     questionSummary: 'What is the hardest part of being a parent that nobody warns you about?',
     takeaway: 'You raise them to leave - and the hardest part starts when they do.',
     pages: 22,
+    sourceUrl: null,
     date: 'March 2021',
     views: '2.4M',
     reads: '11 min',
@@ -36,6 +40,7 @@ export const ANSWER_TOMES: (AnswerBook & { answer: string[]; date?: string; view
     questionSummary: 'Is it ever too late to change careers?',
     takeaway: 'No - but the toll rises every year you leave the road forked.',
     pages: 18,
+    sourceUrl: null,
     date: 'January 2020',
     views: '810K',
     reads: '9 min',
@@ -55,6 +60,7 @@ export const ANSWER_TOMES: (AnswerBook & { answer: string[]; date?: string; view
     questionSummary: 'How do you forgive yourself for a mistake that changed everything?',
     takeaway: 'Your worst error is the only teacher that grades you honestly.',
     pages: 26,
+    sourceUrl: null,
     date: 'July 2021',
     views: '1.1M',
     reads: '12 min',
@@ -74,6 +80,7 @@ export const ANSWER_TOMES: (AnswerBook & { answer: string[]; date?: string; view
     questionSummary: 'What do you say to someone who is dying?',
     takeaway: 'Less than you think. Presence beats prose.',
     pages: 14,
+    sourceUrl: null,
     date: 'November 2022',
     views: '3.2M',
     reads: '7 min',
@@ -93,6 +100,7 @@ export const ANSWER_TOMES: (AnswerBook & { answer: string[]; date?: string; view
     questionSummary: 'How much money is enough to be happy?',
     takeaway: 'Wealth is the gap between what you want and what you have. Widen it from both ends.',
     pages: 28,
+    sourceUrl: null,
     date: 'May 2020',
     views: '1.9M',
     reads: '10 min',
@@ -112,6 +120,7 @@ export const ANSWER_TOMES: (AnswerBook & { answer: string[]; date?: string; view
     questionSummary: 'How do you actually get to know your neighbors?',
     takeaway: 'A street becomes a home the day someone borrows a ladder and returns soup.',
     pages: 20,
+    sourceUrl: null,
     date: 'August 2019',
     views: '640K',
     reads: '8 min',
@@ -131,6 +140,7 @@ export const ANSWER_TOMES: (AnswerBook & { answer: string[]; date?: string; view
     questionSummary: 'How do you find the courage to make a big life change?',
     takeaway: 'Bravery is rented, never owned - you renew it every morning.',
     pages: 24,
+    sourceUrl: null,
     date: 'February 2021',
     views: '1.4M',
     reads: '11 min',
@@ -150,6 +160,7 @@ export const ANSWER_TOMES: (AnswerBook & { answer: string[]; date?: string; view
     questionSummary: 'What is one small habit that changed your life?',
     takeaway: 'One extra chair has ended more loneliness than a thousand good intentions.',
     pages: 30,
+    sourceUrl: null,
     date: 'December 2020',
     views: '2.7M',
     reads: '13 min',
@@ -169,6 +180,7 @@ export const ANSWER_TOMES: (AnswerBook & { answer: string[]; date?: string; view
     questionSummary: 'What is something you only appreciated after it was gone?',
     takeaway: 'You never know the last ordinary day until it has been gone a long while.',
     pages: 19,
+    sourceUrl: null,
     date: 'June 2022',
     views: '2.2M',
     reads: '9 min',
@@ -188,6 +200,7 @@ export const ANSWER_TOMES: (AnswerBook & { answer: string[]; date?: string; view
     questionSummary: 'Am I too old to start over?',
     takeaway: 'You are never too old to become a beginner - only too practiced at waiting.',
     pages: 16,
+    sourceUrl: null,
     date: 'September 2023',
     views: '980K',
     reads: '8 min',

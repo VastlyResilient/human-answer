@@ -20,4 +20,6 @@ export interface AnswerBook {
   questionSummary: string
   takeaway: string
   pages: number
+  /** Direct Quora permalink for THIS answer (set by import-answers.mjs) */
+  sourceUrl?: string | null
 }

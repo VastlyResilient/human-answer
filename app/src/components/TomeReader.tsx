@@ -1,4 +1,4 @@
-import { ExternalLink, CalendarDays, Eye, Clock3 } from 'lucide-react'
+import { ExternalLink, CalendarDays, Eye, Clock3, Search } from 'lucide-react'
 
 export interface Tome {
   id: string
@@ -9,17 +9,31 @@ export interface Tome {
   date?: string
   views?: string
   reads?: string
+  /** Direct URL to THIS answer on Quora. Filled automatically by
+   *  scripts/import-answers.mjs from Matt's export. While null, the book
+   *  deep-links the exact question via Quora search + Google fallback. */
+  sourceUrl?: string | null
 }
 
 export const PROFILE_URL = 'https://www.quora.com/profile/WolfSpirit99'
 
+function quoraSearchUrl(question: string) {
+  return 'https://www.quora.com/search?q=' + encodeURIComponent(question)
+}
+function googleFallbackUrl(question: string) {
+  return 'https://www.google.com/search?q=' + encodeURIComponent('site:quora.com WolfSpirit99 ' + question)
+}
+
 /**
- * The opened book: leather-bound two-page spread per the reference image.
- * Left page = the question (as the page title) + the full answer text.
- * Right page = engraved plate + metadata + the source link.
+ * The opened book: leather-bound two-page spread.
+ * The right page ALWAYS routes the reader back to this answer's Quora home:
+ *  - direct answer URL when known (export)
+ *  - otherwise a deep search for the exact question, which lands on the thread.
  */
 export default function TomeReader({ tome }: { tome: Tome }) {
   const paragraphs = tome.answer
+  const direct = tome.sourceUrl && /^https:\/\/www\.quora\.com\//.test(tome.sourceUrl) ? tome.sourceUrl : null
+
   return (
     <div className="tome-frame">
       <div className="tome-gutter" aria-hidden="true" />
@@ -43,10 +57,10 @@ export default function TomeReader({ tome }: { tome: Tome }) {
         </div>
       </div>
 
-      {/* RIGHT PAGE - plate + provenance */}
+      {/* RIGHT PAGE - plate + provenance + the way back to the original */}
       <div className="tome-page tome-right">
         <div className="tome-plate">
-          <img src="./folio/plate-generic.png" alt="Engraved illustration plate" draggable={false} />
+          <img src="../folio/plate-generic.png" alt="Engraved illustration plate" draggable={false} />
         </div>
         <dl className="tome-meta">
           {tome.date && (
@@ -57,18 +71,29 @@ export default function TomeReader({ tome }: { tome: Tome }) {
           )}
           <div><dt><Clock3 size={12} /> Reading</dt><dd>{tome.reads ?? '8 min'}</dd></div>
         </dl>
-        <a
-          className="tome-source"
-          href={PROFILE_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <ExternalLink size={13} />
-          <span>Read it where it lives &mdash; on Quora</span>
-        </a>
+
+        {direct ? (
+          <a className="tome-source" href={direct} target="_blank" rel="noopener noreferrer">
+            <ExternalLink size={13} />
+            <span>Read the original answer on Quora</span>
+          </a>
+        ) : (
+          <>
+            <a className="tome-source" href={quoraSearchUrl(tome.questionSummary)} target="_blank" rel="noopener noreferrer"
+               title="Opens this exact question on Quora">
+              <Search size={13} />
+              <span>Open this answer on Quora</span>
+            </a>
+            <a className="tome-source-sm" href={googleFallbackUrl(tome.questionSummary)} target="_blank" rel="noopener noreferrer">
+              exact thread via Google ↗
+            </a>
+          </>
+        )}
+
         <p className="tome-note">
-          Edition text is the full answer as published on this shelf. Verbatim
-          Quora wording lands with Matt&rsquo;s archive export.
+          {direct
+            ? 'Links straight to the original Quora post for this answer.'
+            : 'Deep-links to this exact question on Quora; the direct permalink locks in with Matt\u2019s archive export.'}
         </p>
       </div>
     </div>
