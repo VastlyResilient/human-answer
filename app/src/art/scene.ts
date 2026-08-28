@@ -20,13 +20,16 @@ const MOTIF_WORDS: Record<Motif, string[]> = {
 }
 
 export function detectMotif(text: string): Motif {
-  const t = text.toLowerCase()
+  const t = ' ' + text.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ') + ' '
   let best: Motif = 'abstract'
   let bestScore = 0
   ;(Object.keys(MOTIF_WORDS) as Motif[]).forEach((motif) => {
     let score = 0
     for (const w of MOTIF_WORDS[motif]) {
-      if (t.includes(w)) score += w.length > 5 ? 2 : 1
+      // whole-word match with word boundaries - prevents 'war' matching inside
+      // 'wardrobe' and stops high-frequency words from dominating every book
+      const re = new RegExp('\\b' + w.replace(/\s/g, '\\s+') + '(s|es)?\\b')
+      if (re.test(t)) score += w.length > 5 ? 2 : 1
     }
     if (score > bestScore) { best = motif; bestScore = score }
   })
@@ -35,8 +38,15 @@ export function detectMotif(text: string): Motif {
 
 export interface BookArt { motif: Motif; cover: string; plate: string }
 
+const VISUAL_MOTIFS: Motif[] = ['sea', 'road', 'night', 'home', 'loss', 'bond', 'trial', 'money', 'ordinary', 'nature']
+
 export function artFor(text: string): BookArt {
-  const motif = detectMotif(text)
+  let motif = detectMotif(text)
+  if (motif === 'abstract') {
+    // no keyword hit: seed-pick a visual motif so art stays varied, deterministic per answer
+    const h = hash(text)
+    motif = VISUAL_MOTIFS[h % VISUAL_MOTIFS.length]
+  }
   return {
     motif,
     cover: `./art/cover-${motif}.jpg`,

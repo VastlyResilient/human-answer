@@ -68,15 +68,18 @@ export default function BookshelfWindowContent() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const selected = ANSWER_TOMES.find((b) => b.id === selectedId) ?? null
 
-  // featured shelf: fixed window of 12, navigable by arrows
+  // featured shelf: navigable window of 12, stride 6
   const SHELF_WINDOW = 12
-  const shelfBooks = useMemo(() => {
-    const arr = filtered.slice(shelfIndex, shelfIndex + SHELF_WINDOW)
-    return arr
-  }, [filtered, shelfIndex])
+  const SHELF_STRIDE = 6
+  const maxShelf = Math.max(0, filtered.length - SHELF_WINDOW)
+  const shelfBooks = useMemo(
+    () => filtered.slice(shelfIndex, shelfIndex + SHELF_WINDOW),
+    [filtered, shelfIndex],
+  )
   const canShelfLeft = shelfIndex > 0
-  const canShelfRight = shelfIndex + SHELF_WINDOW < filtered.length
-  const shiftShelf = (dir: 1 | -1) => setShelfIndex((v) => Math.min(Math.max(0, filtered.length - SHELF_WINDOW), Math.max(0, v + dir * 6)))
+  const canShelfRight = shelfIndex < maxShelf
+  const shiftShelf = (dir: 1 | -1) =>
+    setShelfIndex((v) => Math.min(maxShelf, Math.max(0, v + dir * SHELF_STRIDE)))
 
   if (selected) {
     const idx = filtered.findIndex((b) => b.id === selected.id)

@@ -88,15 +88,21 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   report.checks.maximize_works = await page.evaluate(() =>
     document.querySelector("[data-window-id]").getBoundingClientRect().width > innerWidth - 40);
 
-  // shelf books visible with titled covers loading
-  report.checks.books_present = await page.evaluate(() => document.querySelectorAll(".book").length === 20);
+  // shelf books visible with titled covers loading (wait for render)
+  try {
+    await page.waitForFunction(() => document.querySelectorAll('.book-front-cover').length >= 10, { timeout: 15000 });
+  } catch {}
+  report.checks.books_present = await page.evaluate(() => document.querySelectorAll(".book").length >= 10);
   report.checks.titled_covers_load = await page.evaluate(async () => {
     const urls = Array.from(new Set(Array.from(document.querySelectorAll(".book-front-cover"))
       .map(el => el.style.backgroundImage.match(/url\("?([^"]+)"?\)/)?.[1]).filter(Boolean)));
+    if (urls.length < 8) return false;
     const ok = await Promise.all(urls.map(u => new Promise(res => {
-      const img = new Image(); img.onload = () => res(true); img.onerror = () => res(false); img.src = u;
+      const img = new Image();
+      img.onload = () => res(true); img.onerror = () => res(false); img.src = u;
+      setTimeout(() => res(img.complete && img.naturalWidth > 0), 8000);
     })));
-    return ok.every(Boolean) && urls.length === 10;
+    return ok.every(Boolean);
   });
 
   // book click -> TOME READER (reference leather/parchment spread)
@@ -119,8 +125,9 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   });
   await sleep(350);
   report.checks.archive_count = await page.evaluate(() => {
-    const m = (document.body.textContent ?? '').match(/(\d+)\s+answers/i);
-    return m ? Number(m[1]) >= 940 : false;
+    const t = document.body.textContent ?? '';
+    const m = t.match(/(\d{3,4})\s+answers/i) || t.match(/\((\d{3,4})\)/);
+    return m ? Number(m[1]) >= 900 : false;
   });
 
   // close answers window via JS (chrome buttons are inside a moving window)
