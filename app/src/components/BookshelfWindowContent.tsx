@@ -5,14 +5,59 @@ import TomeReader from './TomeReader'
 import type { AnswerBook } from '../types'
 
 const PAGE_SIZE = 60
-
 const PAGE_STEP = 1.1
 const PAGE_INSET = 8
 const SKEW = '30deg'
 
-function Book({ book }: { book: AnswerBook }) {
+/* ---------- per-book generated cover (correct title on every spine) ---------- */
+function xmlEsc(s: string) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
+export function svgCover(t: { title: string[]; theme: string }): string {
+  const W = 200, H = 286
+  const lines = t.title.slice(0, 3)
+  const longest = lines.reduce((m, l) => Math.max(m, l.length), 0)
+  const fs = longest <= 8 ? 24 : longest <= 12 ? 20 : longest <= 16 ? 16 : longest <= 22 ? 13 : 11
+  const startY = 84
+  const lh = Math.round(fs * 1.5)
+
+  const titleEls = lines
+    .map((l, i) => {
+      const y = startY + i * lh
+      return `<text x="${W / 2}" y="${y}" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="${fs}" letter-spacing="1" fill="#f2ecdd" stroke="#000000" stroke-width="0.6" paint-order="stroke">${xmlEsc(l)}</text>`
+    })
+    .join('')
+
+  const gradId = 'g' + Math.abs(t.theme.split('').reduce((a, c) => a + c.charCodeAt(0), 0))
+  const lastY = startY + (lines.length - 1) * lh + 34
+
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">` +
+    `<defs>` +
+    `<linearGradient id="${gradId}" x1="0" y1="0" x2="0.4" y2="1">` +
+    `<stop offset="0" stop-color="#241a10"/><stop offset="0.55" stop-color="#171009"/><stop offset="1" stop-color="#0c0806"/>` +
+    `</linearGradient>` +
+    `<filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2"/><feColorMatrix type="saturate" values="0"/></filter>` +
+    `</defs>` +
+    `<rect width="${W}" height="${H}" fill="url(#${gradId})"/>` +
+    `<rect width="${W}" height="${H}" filter="url(#n)" opacity="0.05"/>` +
+    `<rect x="7" y="7" width="${W - 14}" height="${H - 14}" fill="none" stroke="rgba(242,236,221,0.5)" stroke-width="1.5"/>` +
+    `<rect x="11" y="11" width="${W - 22}" height="${H - 22}" fill="none" stroke="rgba(242,236,221,0.18)" stroke-width="0.75"/>` +
+    titleEls +
+    `<rect x="${W / 2 - 22}" y="${lastY}" width="44" height="1" fill="rgba(242,236,221,0.55)"/>` +
+    `<text x="${W / 2}" y="${H - 34}" text-anchor="middle" font-family="Georgia, serif" font-size="8.5" letter-spacing="2.5" fill="rgba(233,222,200,0.8)">A WOLF SPIRIT</text>` +
+    `<text x="${W / 2}" y="${H - 22}" text-anchor="middle" font-family="Georgia, serif" font-size="8.5" letter-spacing="2.5" fill="rgba(233,222,200,0.8)">EDITION</text>` +
+    `</svg>`
+
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg)
+}
+
+function Book({ book }: { book: AnswerBook & { title: string[] } }) {
   const depth = PAGE_STEP * (book.pages + 1)
   const pages = useMemo(() => Array.from({ length: book.pages }, (_, idx) => ({ i: idx + 1 })), [book.pages])
+  const cover = useMemo(() => svgCover(book), [book.title.join(' ')])
+
   return (
     <div className="book" style={{ width: `${200 + depth + 1.1}px` }} title={book.questionSummary}>
       <div className="book-hinge" style={{ width: `${depth + 1}px`, background: book.theme }} />
@@ -32,7 +77,7 @@ function Book({ book }: { book: AnswerBook }) {
         )
       })}
       <div className="book-layer book-front-cover"
-           style={{ transform: `skewY(${SKEW})`, backgroundImage: `url(${book.cover})` }} />
+           style={{ transform: `skewY(${SKEW})`, backgroundImage: `url("${cover}")` }} />
     </div>
   )
 }
@@ -61,7 +106,6 @@ export default function BookshelfWindowContent() {
     return [...top, ...top]
   }, [])
 
-  // ---------- opened book ----------
   if (selected) {
     return (
       <div className="px-4 pb-6 pt-3 sm:px-6">
@@ -82,10 +126,8 @@ export default function BookshelfWindowContent() {
     )
   }
 
-  // ---------- archive ----------
   return (
     <div className="flex h-full flex-col">
-      {/* header strip */}
       <div className="flex flex-shrink-0 flex-wrap items-center justify-between gap-3 px-5 pt-3">
         <div className="flex items-center gap-2">
           <Library className="text-[#DA3F23]" size={15} />
@@ -101,14 +143,13 @@ export default function BookshelfWindowContent() {
           <input
             value={query}
             onChange={(e) => { setQuery(e.target.value); setPage(0) }}
-            placeholder="Search 947 answers..."
+            placeholder="Search the archive..."
             aria-label="Search answers"
             className="h-9 w-64 rounded-lg bg-zinc-800/70 pl-8 pr-3 text-sm text-white placeholder-zinc-500 transition-colors focus:outline-none focus:ring-1 focus:ring-zinc-500"
           />
         </div>
       </div>
 
-      {/* shelf marquee (first 10, duplicated for the loop) */}
       {!query && (
         <div className="answers-shelf">
           <div className="marquee-mask" aria-label="Featured answer volumes marquee">
@@ -127,7 +168,6 @@ export default function BookshelfWindowContent() {
         </div>
       )}
 
-      {/* index grid */}
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-3">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {pageItems.map((b) => (
@@ -148,7 +188,6 @@ export default function BookshelfWindowContent() {
           ))}
         </div>
 
-        {/* pager */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-3 py-4 text-xs text-zinc-400">
             <button onClick={() => setPage((v) => Math.max(0, v - 1))} disabled={page === 0}

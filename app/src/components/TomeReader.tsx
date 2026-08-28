@@ -1,4 +1,4 @@
-import { ExternalLink, CalendarDays, Eye, Clock3, KeyRound, Search } from 'lucide-react'
+import { ExternalLink, CalendarDays, Clock3, KeyRound, Search } from 'lucide-react'
 
 export interface Tome {
   id: string
@@ -9,11 +9,9 @@ export interface Tome {
   date?: string
   views?: string
   reads?: string
-  /** Engraved plate artwork for this volume's right page */
   plate?: string
-  /** Direct URL to THIS answer on Quora. Set automatically by
-   *  scripts/import-answers.mjs once Matt's export lands. */
   sourceUrl?: string | null
+  preview?: boolean
 }
 
 export const PROFILE_URL = 'https://www.quora.com/profile/WolfSpirit99'
@@ -22,23 +20,36 @@ function googleQuestionUrl(question: string) {
   return 'https://www.google.com/search?q=' + encodeURIComponent('site:quora.com "' + question + '"')
 }
 
-/**
- * Opened book. Routing policy (all paths verified against live Quora/Google):
- *  1. With a real permalink (sourceUrl): one click opens THIS exact answer.
- *  2. Without it: "Open Matt's Quora profile" (lands, verified) plus
- *     "Find this exact question" - a site-scoped Google search for the
- *     question whose #1 result is the thread containing the answer.
- * We never fabricate slugs: Quora 404s them or redirects to its homepage.
- */
+/** chapterize: split the answer text into 2-5 titled chapters */
+function chapters(paras: string[], question: string): { head: string; body: string[] }[] {
+  if (paras.length < 2) return [{ head: 'The Answer', body: paras }]
+  const n = Math.min(5, Math.max(2, Math.round(paras.length / 2)))
+  const per = Math.ceil(paras.length / n)
+  const openers = [
+    'The Opening',
+    'The Middle Ground',
+    'What Nobody Says',
+    'The Turn',
+    'The Point Beneath',
+    'The Takeaway',
+  ]
+  const out: { head: string; body: string[] }[] = []
+  for (let i = 0; i < paras.length; i += per) {
+    out.push({ head: openers[out.length % openers.length], body: paras.slice(i, i + per) })
+  }
+  return out
+}
+
 export default function TomeReader({ tome }: { tome: Tome }) {
   const direct = tome.sourceUrl && /^https:\/\/www\.quora\.com\//.test(tome.sourceUrl) ? tome.sourceUrl : null
+  const chs = chapters(tome.answer, tome.questionSummary)
 
   return (
     <div className="tome-frame">
       <div className="tome-gutter" aria-hidden="true" />
       <div className="tome-ribbon" aria-hidden="true" />
 
-      {/* LEFT PAGE */}
+      {/* LEFT PAGE - question as title, full answer in chapters */}
       <div className="tome-page tome-left">
         <div className="tome-kicker">{tome.topic}</div>
         <h3 className="tome-title">{tome.questionSummary}</h3>
@@ -48,31 +59,47 @@ export default function TomeReader({ tome }: { tome: Tome }) {
             <path d="M100 1 L104 5 L100 9 L96 5 Z" fill="#6b5233" opacity="0.7" />
           </svg>
         </div>
+
         <div className="tome-body">
-          {tome.answer.map((p, i) => (
-            <p key={i}>{p}</p>
+          {chs.map((ch, ci) => (
+            <section key={ci} className="tome-chapter">
+              <div className="tome-chapter-head">
+                <span className="tome-chapter-no">Chapter {['I','II','III','IV','V','VI'][ci] ?? ci + 1}</span>
+                <span className="tome-chapter-name">{ch.head}</span>
+                <span className="tome-chapter-line" aria-hidden="true" />
+              </div>
+              {ch.body.map((p, pi) => (
+                <p key={pi}>{p}</p>
+              ))}
+            </section>
           ))}
           <p className="tome-signoff">— WolfSpirit99</p>
         </div>
       </div>
 
-      {/* RIGHT PAGE */}
+      {/* RIGHT PAGE - paper cover art, provenance, the way back */}
       <div className="tome-page tome-right">
-        <div className="tome-plate">
-          <img
-            src={tome.plate ?? '../folio/plate-generic.png'}
-            alt={`Engraved illustration plate for ${tome.title.join(' ')}`}
-            draggable={false}
-          />
+        {/* paper cover art: mini front cover of THIS book */}
+        <div className="tome-cover-art" aria-hidden="true">
+          <div className="tome-cover-inner">
+            <div className="tome-cover-frame" />
+            {tome.title.slice(0, 3).map((l, i) => (
+              <div key={i} className="tome-cover-line">{l}</div>
+            ))}
+            <div className="tome-cover-sep" />
+            <div className="tome-cover-brand">A WOLF SPIRIT EDITION</div>
+          </div>
+          <div className="tome-cover-plate">
+            <img src={tome.plate ?? '../folio/plate-generic.png'} alt="" draggable={false} />
+          </div>
         </div>
+
         <dl className="tome-meta">
           {tome.date && (
             <div><dt><CalendarDays size={12} /> Written</dt><dd>{tome.date}</dd></div>
           )}
-          {tome.views && (
-            <div><dt><Eye size={12} /> Viewed</dt><dd>{tome.views} times</dd></div>
-          )}
-          <div><dt><Clock3 size={12} /> Reading</dt><dd>{tome.reads ?? '8 min'}</dd></div>
+          <div><dt><Clock3 size={12} /> Reading</dt><dd>{tome.reads ?? '6 min'}</dd></div>
+          <div><dt>§</dt><dd>{chs.length} chapter{chs.length > 1 ? 's' : ''}</dd></div>
         </dl>
 
         {direct ? (
@@ -81,14 +108,11 @@ export default function TomeReader({ tome }: { tome: Tome }) {
               <ExternalLink size={13} />
               <span>Read this exact answer on Quora</span>
             </a>
-            <p className="tome-permalink-note">
-              Linked straight to the original post.
-            </p>
+            <p className="tome-permalink-note">Linked straight to the original post.</p>
           </>
         ) : (
           <>
-            <a className="tome-source" href={googleQuestionUrl(tome.questionSummary)} target="_blank" rel="noopener noreferrer"
-               title="Opens a site-scoped search; the thread with this answer is the top result">
+            <a className="tome-source" href={googleQuestionUrl(tome.questionSummary)} target="_blank" rel="noopener noreferrer">
               <Search size={13} />
               <span>Find this exact question</span>
             </a>
@@ -97,9 +121,7 @@ export default function TomeReader({ tome }: { tome: Tome }) {
             </a>
             <p className="tome-permalink-note">
               <KeyRound size={11} />
-              Quora serves question pages only to logged-in visitors, so the
-              direct permalink unlocks with Matt&rsquo;s archive export &mdash; then
-              every book hard-links its own answer.
+              Direct permalink unlocks with the archive export.
             </p>
           </>
         )}
@@ -107,7 +129,7 @@ export default function TomeReader({ tome }: { tome: Tome }) {
         <p className="tome-note">
           {direct
             ? 'Links directly to the original Quora post for this answer.'
-            : 'Edition text is this shelf\u2019s full rendering of the answer; the verbatim post lives on Quora.'}
+            : 'Edition text is this shelf\u2019s rendering of the answer; the verbatim post lives on Quora.'}
         </p>
       </div>
     </div>

@@ -103,12 +103,13 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   await page.evaluate(() => document.querySelectorAll(".book-wrap")[2].dispatchEvent(new MouseEvent("click",{bubbles:true})));
   await sleep(500);
   report.checks.tome_reader_opens = await page.evaluate(() => {
-    const t = document.body.textContent ?? '';
-    return t.includes('How do you forgive yourself') && t.includes("Quora profile") && t.includes('WolfSpirit99');
-  });
-  report.checks.tome_source_link_present = await page.evaluate(() => {
+    const q = document.querySelector('.tome-title');
     const a = document.querySelector('.tome-source');
-    return a && (a.getAttribute('href')?.includes('google.com/search?q=site%3Aquora.com') || a.getAttribute('href') === 'https://www.quora.com/profile/WolfSpirit99');
+    return !!q && !!a && /quora\.com\/.+\/answer\/WolfSpirit99/.test(a.href || '');
+  });
+  report.checks.tome_direct_permalink = await page.evaluate(() => {
+    const a = document.querySelector('.tome-source');
+    return a && /\/answer\/WolfSpirit99/.test(a.getAttribute('href') || '');
   });
   // Back to the shelf inside the window, then verify the 10-volume index
   await page.evaluate(() => {
@@ -117,10 +118,9 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
     if (back) back.click();
   });
   await sleep(350);
-  report.checks.tome_has_10 = await page.evaluate(() => {
-    const btns = Array.from(document.querySelectorAll('button'));
-    return btns.filter(b => b.textContent?.includes("THE SILENCE AFTER")).length >= 1
-        && btns.filter(b => b.textContent?.includes("OLD DOGS")).length >= 1;
+  report.checks.archive_count = await page.evaluate(() => {
+    const m = (document.body.textContent ?? '').match(/(\d+)\s+answers/i);
+    return m ? Number(m[1]) >= 940 : false;
   });
 
   // close answers window via JS (chrome buttons are inside a moving window)
