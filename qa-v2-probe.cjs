@@ -15,7 +15,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   page.on("console", m => { if (m.type() === "error") report.console_errors.push(m.text().slice(0,200)); });
   page.on("pageerror", e => report.page_errors.push(String(e).slice(0,300)));
 
-  await page.goto(SITE, { waitUntil: "load" });
+  await page.goto(SITE + "?cb=" + Date.now(), { waitUntil: "load" });
   await sleep(2500);
 
   // no signup remnants
@@ -94,15 +94,17 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   } catch {}
   report.checks.books_present = await page.evaluate(() => document.querySelectorAll(".book").length >= 10);
   report.checks.titled_covers_load = await page.evaluate(async () => {
-    const urls = Array.from(new Set(Array.from(document.querySelectorAll(".book-front-cover"))
+    const els = Array.from(document.querySelectorAll(".book-front-cover"));
+    if (els.length < 10) return false;
+    const urls = Array.from(new Set(els
       .map(el => el.style.backgroundImage.match(/url\("?([^"]+)"?\)/)?.[1]).filter(Boolean)));
-    if (urls.length < 8) return false;
-    const ok = await Promise.all(urls.map(u => new Promise(res => {
-      const img = new Image();
-      img.onload = () => res(true); img.onerror = () => res(false); img.src = u;
+    const allArt = urls.every(u => u.includes("/art/cover-"));
+    const allLoaded = await Promise.all(urls.map(u => new Promise(res => {
+      const img = new Image(); img.onload = () => res(true); img.onerror = () => res(false); img.src = u;
       setTimeout(() => res(img.complete && img.naturalWidth > 0), 8000);
     })));
-    return ok.every(Boolean);
+    const bands = els.filter(el => el.querySelector(".book-cover-titlelines div")).length;
+    return allArt && allLoaded.every(Boolean) && bands === els.length;
   });
 
   // book click -> TOME READER (reference leather/parchment spread)
