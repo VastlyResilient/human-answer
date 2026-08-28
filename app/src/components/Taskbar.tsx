@@ -15,7 +15,6 @@ const items: { kind: WinKind; label: string; icon: typeof User }[] = [
   { kind: 'answers', label: "Matt's Answers", icon: Library },
   { kind: 'record', label: 'Track Record', icon: Trophy },
   { kind: 'column', label: 'Living Column', icon: Newspaper },
-  { kind: 'ask', label: 'Ask Matt', icon: MessageCircle },
 ]
 
 export default function Taskbar({ windows, onOpen, onFocus, onRestore, onClose }: TaskbarProps) {

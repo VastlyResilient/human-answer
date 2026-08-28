@@ -10,7 +10,6 @@ const icons = [
   { kind: 'answers' as const, label: "Matt's Answers", icon: Library },
   { kind: 'record' as const, label: 'Track Record', icon: Trophy },
   { kind: 'column' as const, label: 'Living Column', icon: Newspaper },
-  { kind: 'ask' as const, label: 'Ask Matt', icon: MessageCircle },
 ]
 
 export default function DesktopIcons({ onOpen }: DesktopIconsProps) {

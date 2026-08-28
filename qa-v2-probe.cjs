@@ -166,39 +166,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
     if (top) { const cb = top.querySelector('button[aria-label^="Close"]'); if (cb) cb.click(); }
   });
   await sleep(250);
-  await page.click('button:has-text("Ask Matt")');
-  await sleep(500);
-  await page.fill('textarea[aria-label="Message"]', "Is it too late for me to start over at 45?");
-  await page.press('textarea[aria-label="Message"]', "Enter");
-  // wait for streaming to finish (answer includes the toll line)
-  try {
-    await page.waitForFunction(() => {
-      const bubbles = Array.from(document.querySelectorAll("p"));
-      return bubbles.some(p => p.textContent.includes("toll goes up"));
-    }, { timeout: 25000 });
-    report.checks.bot_answers_career = true;
-  } catch { report.checks.bot_answers_career = false; }
-
-  await page.fill('textarea[aria-label="Message"]', "who are you exactly?");
-  await page.press('textarea[aria-label="Message"]', "Enter");
-  try {
-    await page.waitForFunction(() => {
-      const bubbles = Array.from(document.querySelectorAll("p"));
-      return bubbles.some(p => p.textContent.includes("I am an AI"));
-    }, { timeout: 25000 });
-    report.checks.bot_identity_honest = true;
-  } catch { report.checks.bot_identity_honest = false; }
-  await page.screenshot({ path: path.join(QA, "v2-chat.png") });
-
-  // memory follow-up: "tell me more" keeps thread
-  await page.fill('textarea[aria-label="Message"]', "tell me more");
-  await page.press('textarea[aria-label="Message"]', "Enter");
-  await sleep(6000);
-  report.checks.bot_memory_followup = await page.evaluate(() => {
-    const bubbles = Array.from(document.querySelectorAll("p")).map(p => p.textContent);
-    return bubbles.length >= 6;
-  });
-
+  // Ask Matt chatbot removed from the product
   await page.screenshot({ path: path.join(QA, "v2-final.png") });
 
   // mobile quick sanity
@@ -207,7 +175,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   await mp.goto(SITE, { waitUntil: "load" }); await sleep(1500);
   report.mobile = await mp.evaluate(() => ({
     overflow_x: document.documentElement.scrollWidth > innerWidth + 1,
-    icons_tappable: Array.from(document.querySelectorAll("button")).some(b => b.textContent.includes("Ask Matt")),
+    icons_tappable: Array.from(document.querySelectorAll("button")).some(b => b.textContent.includes("Track Record")),
   }));
   await mp.screenshot({ path: path.join(QA, "v2-mobile.png") });
 

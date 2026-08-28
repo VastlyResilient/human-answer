@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Eye, PenLine, CalendarClock, Mic, Info, ExternalLink, User, Library, Newspaper, MessageCircle, Trophy } from 'lucide-react'
+import { Eye, PenLine, CalendarClock, Mic, Info, ExternalLink, User, Library, Newspaper, Trophy } from 'lucide-react'
 import { PROFILE_URL } from './TomeReader'
 
 const STATS = [
@@ -14,7 +14,6 @@ const NAV = [
   { icon: Library, label: "Matt's Answers" },
   { icon: Trophy, label: 'Track Record', active: true },
   { icon: Newspaper, label: 'Living Column' },
-  { icon: MessageCircle, label: 'Ask Matt' },
 ]
 
 export default function MattsRecord() {

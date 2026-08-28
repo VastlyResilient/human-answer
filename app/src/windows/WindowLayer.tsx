@@ -2,7 +2,6 @@ import { useRef, useState } from 'react'
 import type { WinKind, WindowState } from '../types'
 import AboutWindow from '../components/AboutWindow'
 import ColumnWindow from '../components/ColumnWindow'
-import AskMattChat from '../components/AskMattChat'
 import BookshelfWindowContent from '../components/BookshelfWindowContent'
 import MattsRecord from '../components/MattsRecord'
 
@@ -156,8 +155,6 @@ function WindowBody({ kind, openPayload }: { kind: WinKind; windowId: string; op
       return <BookshelfWindowContent />
     case 'column':
       return <ColumnWindow />
-    case 'ask':
-      return <AskMattChat />
     case 'record':
       return <MattsRecord />
     default:
