@@ -979,3 +979,15 @@ input, textarea { cursor: text; }
   color: rgba(233,222,200,0.85); text-shadow: 0 1px 2px rgba(0,0,0,0.9);
 }
 
+
+
+/* ---- v9: no-overflow guarantees + continuation marker ---- */
+.tome-page { overflow: hidden; }
+.tome-body { overflow: hidden; }
+.tome-title { overflow: hidden; }
+.tome-continued {
+  font-family: 'Lawrence', Georgia, serif;
+  font-size: 12px; font-style: italic; letter-spacing: 0.12em;
+  color: #8a6a3b; margin: 0 0 8px;
+}
+.tome-plate img { width: 100%; height: auto; object-fit: cover; }

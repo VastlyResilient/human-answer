@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
-import { ExternalLink, CalendarDays, Clock3, KeyRound, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ExternalLink, CalendarDays, Clock3, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { artFor } from '../art/scene'
+import { uniquePlate } from '../art/plate'
 
 export interface Tome {
   id: string
@@ -24,7 +25,7 @@ function googleQuestionUrl(question: string) {
 
 interface Chapter { head: string; body: string[] }
 
-function chapters(paras: string[]): Chapter[] {
+function buildChapters(paras: string[]): Chapter[] {
   if (paras.length < 2) return [{ head: 'The Answer', body: paras }]
   const n = Math.min(5, Math.max(2, Math.round(paras.length / 2)))
   const per = Math.ceil(paras.length / n)
@@ -36,96 +37,128 @@ function chapters(paras: string[]): Chapter[] {
   return out
 }
 
-/* ---- page model: each page = one chapter's paragraphs (left) ---- */
-interface Page {
-  kind: 'chapter' | 'art+meta'
-  chapter?: Chapter
-  chapterIndex?: number
+/* ---- paginate a chapter's body into page-sized chunks (no overflow) ---- */
+const PAGE_BUDGET = 300 // chars per page — gives each answer 2-3 spreads
+
+function paginateParas(paras: string[]): string[][] {
+  const pages: string[][] = []
+  let cur: string[] = []
+  let curLen = 0
+  for (const p of paras) {
+    const words = p.split(/\s+/)
+    let chunk = ''
+    for (const w of words) {
+      const add = (chunk ? ' ' : '') + w
+      if (curLen + chunk.length + add.length <= PAGE_BUDGET) {
+        chunk += (chunk ? ' ' : '') + w
+      } else {
+        if (chunk) { cur.push(chunk); curLen += chunk.length }
+        if (cur.length) { pages.push(cur); cur = []; curLen = 0 }
+        chunk = w
+      }
+    }
+    if (chunk) { cur.push(chunk); curLen += chunk.length }
+  }
+  if (cur.length) pages.push(cur)
+  return pages.length ? pages : [['…']]
+}
+
+interface ContentPage {
+  chapterIndex: number
+  chapterName: string
+  isChapterStart: boolean
+  text: string[]
 }
 
 export default function TomeReader({ tome }: { tome: Tome }) {
   const art = artFor(tome.questionSummary + ' ' + tome.title.join(' '))
-  const chs = useMemo(() => chapters(tome.answer), [tome.answer])
+  const chs = useMemo(() => buildChapters(tome.answer), [tome.answer])
+
+  const spreads = useMemo<ContentPage[]>(() => {
+    const out: ContentPage[] = []
+    chs.forEach((ch, ci) => {
+      paginateParas(ch.body).forEach((text, i) => {
+        out.push({ chapterIndex: ci, chapterName: ch.head, isChapterStart: i === 0, text })
+      })
+    })
+    return out
+  }, [chs])
+
+  const totalPages = spreads.length + 1 // + cover
   const [pageIdx, setPageIdx] = useState(0)
   const [flipDir, setFlipDir] = useState<1 | -1>(1)
-
-  // page 0 = cover/title page (right = art + meta). Pages 1..N = chapters.
-  const totalPages = chs.length + 1
-  const page: Page = pageIdx === 0
-    ? { kind: 'art+meta' }
-    : { kind: 'chapter', chapter: chs[pageIdx - 1], chapterIndex: pageIdx - 1 }
+  const isCover = pageIdx === 0
+  const content = isCover ? null : spreads[pageIdx - 1]
 
   function go(dir: 1 | -1) {
     setFlipDir(dir)
-    setPageIdx((v) => {
-      const n = v + dir
-      if (n < 0) return 0
-      if (n > totalPages - 1) return totalPages - 1
-      return n
-    })
+    setPageIdx((v) => Math.min(totalPages - 1, Math.max(0, v + dir)))
   }
 
   const direct = tome.sourceUrl && /^https:\/\/www\.quora\.com\//.test(tome.sourceUrl) ? tome.sourceUrl : null
+  // unique image seed per page (cover uses the painted plate; content uses procedural)
+  const pageSeed = `${tome.id}·${tome.questionSummary.slice(0, 60)}·page${pageIdx}`
 
   return (
     <div className="tome-frame">
       <div className="tome-gutter" aria-hidden="true" />
       <div className="tome-ribbon" aria-hidden="true" />
 
-      {/* LEFT PAGE - tap = previous chapter */}
+      {/* ===== LEFT PAGE — question (cover) or chapter text ===== */}
       <div
         className="tome-page tome-left tome-page-flippable"
         onClick={() => go(-1)}
         role="button"
         aria-label="Previous page"
-        title="Previous chapter"
+        title="Previous page"
       >
         <div className="tome-kicker">{tome.topic}</div>
-        <h3 className="tome-title">{tome.questionSummary}</h3>
-        <div className="tome-rule" aria-hidden="true">
-          <svg viewBox="0 0 200 10" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M0 5 H90 M110 5 H200" stroke="#6b5233" strokeWidth="1" opacity="0.55" />
-            <path d="M100 1 L104 5 L100 9 L96 5 Z" fill="#6b5233" opacity="0.7" />
-          </svg>
-        </div>
 
-        {page.kind === 'art+meta' ? (
-          <div className="tome-body">
-            <p className="tome-firstline">
-              {tome.answer[0]?.slice(0, 220)}
-              {tome.answer[0] && tome.answer[0].length > 220 ? '…' : ''}
-            </p>
-            <p className="tome-flip-hint">Chapters begin on the facing page &rarr;</p>
-          </div>
+        {isCover ? (
+          <>
+            <h3 className="tome-title">{tome.questionSummary}</h3>
+            <div className="tome-rule" aria-hidden="true">
+              <svg viewBox="0 0 200 10" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M0 5 H90 M110 5 H200" stroke="#6b5233" strokeWidth="1" opacity="0.55" />
+                <path d="M100 1 L104 5 L100 9 L96 5 Z" fill="#6b5233" opacity="0.7" />
+              </svg>
+            </div>
+            <div className="tome-body">
+              <p className="tome-firstline">
+                {tome.answer[0]?.slice(0, 200)}
+                {tome.answer[0] && tome.answer[0].length > 200 ? '…' : ''}
+              </p>
+              <p className="tome-flip-hint">The answer, chaptered, begins on the facing pages &rarr;</p>
+            </div>
+          </>
         ) : (
           <div className={`tome-body tome-flip-${flipDir === 1 ? 'fwd' : 'back'}`} key={pageIdx}>
-            {page.kind === 'chapter' && (
-              <>
-                <div className="tome-chapter-head">
-                  <span className="tome-chapter-no">Chapter {['I','II','III','IV','V','VI'][page.chapterIndex!] ?? page.chapterIndex! + 1}</span>
-                  <span className="tome-chapter-name">{page.chapter!.head}</span>
-                  <span className="tome-chapter-line" aria-hidden="true" />
-                </div>
-                {page.chapter!.body.map((p, pi) => <p key={pi}>{p}</p>)}
-              </>
+            {content!.isChapterStart ? (
+              <div className="tome-chapter-head">
+                <span className="tome-chapter-no">Chapter {['I','II','III','IV','V','VI'][content!.chapterIndex] ?? content!.chapterIndex + 1}</span>
+                <span className="tome-chapter-name">{content!.chapterName}</span>
+                <span className="tome-chapter-line" aria-hidden="true" />
+              </div>
+            ) : (
+              <div className="tome-continued">…continued</div>
             )}
+            {content!.text.map((p, pi) => <p key={pi}>{p}</p>)}
             {pageIdx === totalPages - 1 && <p className="tome-signoff">— WolfSpirit99</p>}
           </div>
         )}
 
-        {/* page footer */}
-        <div className="tome-pageno">{pageIdx === 0 ? 'i' : pageIdx} · {totalPages - 1} ch.</div>
+        <div className="tome-pageno">{isCover ? 'i' : pageIdx} · {spreads.length} pp.</div>
       </div>
 
-      {/* RIGHT PAGE - tap = next chapter */}
+      {/* ===== RIGHT PAGE — image pertaining to this page ===== */}
       <div
         className="tome-page tome-right tome-page-flippable"
         onClick={() => go(1)}
         role="button"
         aria-label="Next page"
-        title="Next chapter"
+        title="Next page"
       >
-        {page.kind === 'art+meta' ? (
+        {isCover ? (
           <>
             <div className="tome-cover-art">
               <div className="tome-cover-inner">
@@ -143,28 +176,26 @@ export default function TomeReader({ tome }: { tome: Tome }) {
             <dl className="tome-meta">
               {tome.date && <div><dt><CalendarDays size={12} /> Written</dt><dd>{tome.date}</dd></div>}
               <div><dt><Clock3 size={12} /> Reading</dt><dd>{tome.reads ?? '6 min'}</dd></div>
-              <div><dt>§</dt><dd>{chs.length} chapter{chs.length > 1 ? 's' : ''}</dd></div>
+              <div><dt>§</dt><dd>{spreads.length} page{spreads.length > 1 ? 's' : ''} · {chs.length} ch.</dd></div>
             </dl>
           </>
         ) : (
-          /* right page on chapter views: show the plate + next-chapter teaser */
           <div className="tome-right-chapter">
             <div className="tome-plate">
-              <img src={art.plate} alt="" draggable={false} />
+              <img src={uniquePlate(pageSeed)} alt={`Engraved plate for chapter ${content!.chapterIndex + 1}`} draggable={false} />
             </div>
             <div className="tome-next-teaser">
               <ChevronRight size={13} />
-              <span>{pageIdx < totalPages - 1 ? 'Next chapter' : 'End of the book'}</span>
+              <span>{pageIdx < totalPages - 1 ? 'Next page' : 'End of the book'}</span>
             </div>
             <dl className="tome-meta">
-              <div><dt>§</dt><dd>Chapter {page.chapterIndex! + 1} of {chs.length}</dd></div>
+              <div><dt>§</dt><dd>Chapter {content!.chapterIndex + 1} · {content!.chapterName}</dd></div>
               <div><dt>«</dt><dd>Tap left page to go back</dd></div>
             </dl>
           </div>
         )}
 
-        {/* routing block stays visible on the right page always */}
-        {page.kind === 'art+meta' && (
+        {isCover && (
           direct ? (
             <>
               <a className="tome-source" href={direct} target="_blank" rel="noopener noreferrer">
@@ -186,11 +217,10 @@ export default function TomeReader({ tome }: { tome: Tome }) {
           )
         )}
 
-        {/* flip arrows */}
         <button
           className="tome-flip-arrow tome-flip-left"
           onClick={(e) => { e.stopPropagation(); go(-1) }}
-          aria-label="Previous chapter"
+          aria-label="Previous page"
           disabled={pageIdx === 0}
         >
           <ChevronLeft size={16} />
@@ -198,7 +228,7 @@ export default function TomeReader({ tome }: { tome: Tome }) {
         <button
           className="tome-flip-arrow tome-flip-right"
           onClick={(e) => { e.stopPropagation(); go(1) }}
-          aria-label="Next chapter"
+          aria-label="Next page"
           disabled={pageIdx >= totalPages - 1}
         >
           <ChevronRight size={16} />
