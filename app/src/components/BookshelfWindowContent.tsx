@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
-import { Search, ArrowLeft, BookOpen, Library } from 'lucide-react'
+import { Search, ArrowLeft, ArrowRight, ArrowLeft as Back, BookOpen, Library } from 'lucide-react'
 import { ANSWER_TOMES } from '../answersData'
-import { buildScene, svgDataUri } from '../art/scene'
+import { artFor } from '../art/scene'
 import TomeReader from './TomeReader'
 import type { AnswerBook } from '../types'
 
@@ -10,58 +10,16 @@ const PAGE_STEP = 1.1
 const PAGE_INSET = 8
 const SKEW = '30deg'
 
-/* ---------- per-book generated cover: title + unique scene medallion ---------- */
-function xmlEsc(s: string) {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-}
-
-interface CoverInput { title: string[]; theme: string; questionSummary: string }
-
-export function svgCover(t: CoverInput): string {
-  const W = 200, H = 286
-  const lines = t.title.slice(0, 3)
-  const longest = lines.reduce((m, l) => Math.max(m, l.length), 0)
-  const fs = longest <= 8 ? 23 : longest <= 12 ? 19 : longest <= 16 ? 15.5 : longest <= 22 ? 12.5 : 10.5
-  const startY = 56
-  const lh = Math.round(fs * 1.45)
-
-  const titleEls = lines
-    .map((l, i) => {
-      const y = startY + i * lh
-      return `<text x="${W / 2}" y="${y}" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="${fs}" letter-spacing="1" fill="#f2ecdd" stroke="#000000" stroke-width="0.6" paint-order="stroke" xml:space="preserve">${xmlEsc(l)}</text>`
-    })
-    .join('')
-
-  // unique scene medallion seeded from the question
-  const scene = buildScene(t.questionSummary + ' ' + t.title.join(' '))
-  const M = 118
-  const medallion = `<g transform="translate(${(W - M) / 2} ${H - M - 40})">${scene.medallion}</g>`
-
-  const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">` +
-    `<defs><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2"/><feColorMatrix type="saturate" values="0"/></filter></defs>` +
-    `<rect width="${W}" height="${H}" fill="${t.theme.match(/#[0-9a-f]{6}/i)?.[0] ?? '#171009'}"/>` +
-    `<rect width="${W}" height="${H}" filter="url(#n)" opacity="0.06"/>` +
-    `<rect x="7" y="7" width="${W - 14}" height="${H - 14}" fill="none" stroke="rgba(242,236,221,0.5)" stroke-width="1.5"/>` +
-    `<rect x="11" y="11" width="${W - 22}" height="${H - 22}" fill="none" stroke="rgba(242,236,221,0.18)" stroke-width="0.75"/>` +
-    titleEls +
-    medallion +
-    `<text x="${W / 2}" y="${H - 16}" text-anchor="middle" font-family="Georgia, serif" font-size="8" letter-spacing="2.5" fill="rgba(233,222,200,0.75)">A WOLF SPIRIT EDITION</text>` +
-    `</svg>`
-
-  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg)
-}
-
-function Book({ book }: { book: AnswerBook & { title: string[] } }) {
+function Book({ book, index }: { book: AnswerBook & { answer: string[] }; index: number }) {
   const depth = PAGE_STEP * (book.pages + 1)
   const pages = useMemo(() => Array.from({ length: book.pages }, (_, idx) => ({ i: idx + 1 })), [book.pages])
-  const cover = useMemo(() => svgCover(book), [book.title.join(' ')])
+  const art = artFor(book.questionSummary + ' ' + book.title.join(' '))
 
   return (
     <div className="book" style={{ width: `${200 + depth + 1.1}px` }} title={book.questionSummary}>
-      <div className="book-hinge" style={{ width: `${depth + 1}px`, background: book.theme }} />
+      <div className="book-hinge" style={{ width: `${depth + 1}px`, background: art.motif === 'sea' ? '#0e1a30' : book.theme }} />
       <div className="book-layer book-back-cover"
-           style={{ background: book.theme, transform: `translateX(${depth}px) skewY(${SKEW})` }} />
+           style={{ background: `linear-gradient(150deg, rgba(0,0,0,0.55), rgba(0,0,0,0.8)), url('${art.cover}') center/cover`, transform: `translateX(${depth}px) skewY(${SKEW})` }} />
       {pages.map(({ i }) => {
         const t = i / book.pages
         return (
@@ -75,8 +33,16 @@ function Book({ book }: { book: AnswerBook & { title: string[] } }) {
                }} />
         )
       })}
+      {/* real painted cover art + title band */}
       <div className="book-layer book-front-cover"
-           style={{ transform: `skewY(${SKEW})`, backgroundImage: `url("${cover}")` }} />
+           style={{ transform: `skewY(${SKEW})`, backgroundImage: `url('${art.cover}')` }}>
+        <div className="book-cover-titleband">
+          <div className="book-cover-titlelines">
+            {book.title.slice(0, 3).map((l, i) => <div key={i}>{l}</div>)}
+          </div>
+          <div className="book-cover-brand">A WOLF SPIRIT EDITION</div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -85,6 +51,7 @@ export default function BookshelfWindowContent() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(0)
+  const [shelfIndex, setShelfIndex] = useState(0)
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase()
@@ -100,25 +67,46 @@ export default function BookshelfWindowContent() {
   )
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const selected = ANSWER_TOMES.find((b) => b.id === selectedId) ?? null
-  const shelfSet = useMemo(() => {
-    const top = ANSWER_TOMES.slice(0, 10)
-    return [...top, ...top]
-  }, [])
+
+  // featured shelf: fixed window of 12, navigable by arrows
+  const SHELF_WINDOW = 12
+  const shelfBooks = useMemo(() => {
+    const arr = filtered.slice(shelfIndex, shelfIndex + SHELF_WINDOW)
+    return arr
+  }, [filtered, shelfIndex])
+  const canShelfLeft = shelfIndex > 0
+  const canShelfRight = shelfIndex + SHELF_WINDOW < filtered.length
+  const shiftShelf = (dir: 1 | -1) => setShelfIndex((v) => Math.min(Math.max(0, filtered.length - SHELF_WINDOW), Math.max(0, v + dir * 6)))
 
   if (selected) {
+    const idx = filtered.findIndex((b) => b.id === selected.id)
     return (
       <div className="px-4 pb-6 pt-3 sm:px-6">
-        <button
-          onClick={() => setSelectedId(null)}
-          className="mb-3 inline-flex items-center gap-1.5 rounded-lg bg-zinc-800/70 px-3 py-1.5 text-xs text-zinc-300 transition-colors hover:bg-zinc-700/70 hover:text-white"
-        >
-          <ArrowLeft size={12} /> Back to the archive ({filtered.length} answers)
-        </button>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <button onClick={() => setSelectedId(null)}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-800/70 px-3 py-1.5 text-xs text-zinc-300 transition-colors hover:bg-zinc-700/70 hover:text-white">
+            <Back size={12} /> Archive ({filtered.length})
+          </button>
+          <div className="flex items-center gap-2 text-xs text-zinc-500">
+            <button
+              onClick={() => { const n = filtered[idx - 1]; if (n) setSelectedId(n.id) }}
+              disabled={idx <= 0}
+              className="rounded-md bg-white/5 px-2.5 py-1 transition-colors hover:bg-white/10 disabled:opacity-30">
+              &larr; Prev book
+            </button>
+            <span>{idx + 1} / {filtered.length}</span>
+            <button
+              onClick={() => { const n = filtered[idx + 1]; if (n) setSelectedId(n.id) }}
+              disabled={idx >= filtered.length - 1}
+              className="rounded-md bg-white/5 px-2.5 py-1 transition-colors hover:bg-white/10 disabled:opacity-30">
+              Next book &rarr;
+            </button>
+          </div>
+        </div>
         <TomeReader tome={selected} />
         {selected.preview && (
           <p className="mx-auto mt-3 max-w-3xl text-center text-[11px] leading-relaxed text-zinc-600">
-            Opening passage &mdash; Quora truncates feed previews. The complete verbatim text goes
-            in with the full-text pass; the link above already points at this exact answer.
+            Opening passage &mdash; Quora truncates feed previews; the full text pass completes these. The link above is this exact answer.
           </p>
         )}
       </div>
@@ -141,7 +129,7 @@ export default function BookshelfWindowContent() {
           <Search size={13} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
           <input
             value={query}
-            onChange={(e) => { setQuery(e.target.value); setPage(0) }}
+            onChange={(e) => { setQuery(e.target.value); setPage(0); setShelfIndex(0) }}
             placeholder="Search the archive..."
             aria-label="Search answers"
             className="h-9 w-64 rounded-lg bg-zinc-800/70 pl-8 pr-3 text-sm text-white placeholder-zinc-500 transition-colors focus:outline-none focus:ring-1 focus:ring-zinc-500"
@@ -149,21 +137,38 @@ export default function BookshelfWindowContent() {
         </div>
       </div>
 
+      {/* navigable shelf */}
       {!query && (
-        <div className="answers-shelf">
-          <div className="marquee-mask" aria-label="Featured answer volumes marquee">
+        <div className="relative">
+          <button
+            onClick={() => shiftShelf(-1)}
+            disabled={!canShelfLeft}
+            aria-label="Scroll shelf left"
+            className="shelf-arrow shelf-arrow-left">
+            <ArrowLeft size={16} />
+          </button>
+
+          <div className="answers-shelf">
             <div className="marquee-fade">
-              <div className="marquee-track">
-                {shelfSet.map((book, i) => (
-                  <div key={`${book.id}-${i}`} className="book-wrap"
-                       style={{ zIndex: shelfSet.length - i }}
+              <div className="shelf-track-static">
+                {shelfBooks.map((book, i) => (
+                  <div key={book.id} className="book-wrap"
+                       style={{ zIndex: shelfBooks.length - i, marginRight: 'calc(-1 * var(--book-overlap))' }}
                        onClick={() => setSelectedId(book.id)}>
-                    <Book book={book} />
+                    <Book book={book} index={shelfIndex + i} />
                   </div>
                 ))}
               </div>
             </div>
           </div>
+
+          <button
+            onClick={() => shiftShelf(1)}
+            disabled={!canShelfRight}
+            aria-label="Scroll shelf right"
+            className="shelf-arrow shelf-arrow-right">
+            <ArrowRight size={16} />
+          </button>
         </div>
       )}
 

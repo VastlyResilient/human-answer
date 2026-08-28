@@ -897,3 +897,85 @@ input, textarea { cursor: text; }
 }
 .tome-cover-plate { margin-top: 10px; border: 1px solid rgba(242,236,221,0.2); border-radius: 4px; overflow: hidden; }
 .tome-cover-plate img { display: block; width: 100%; height: auto; opacity: 0.85; mix-blend-mode: screen; filter: sepia(0.4) brightness(0.9); }
+
+/* ---- flipbook affordances ---- */
+.tome-page-flippable { cursor: default; }
+.tome-flip-fwd { animation: tome-in-fwd 420ms cubic-bezier(0.2,0.7,0.2,1); }
+.tome-flip-back { animation: tome-in-back 420ms cubic-bezier(0.2,0.7,0.2,1); }
+@keyframes tome-in-fwd { from { opacity: 0; transform: translateX(26px); } to { opacity: 1; transform: none; } }
+@keyframes tome-in-back { from { opacity: 0; transform: translateX(-26px); } to { opacity: 1; transform: none; } }
+
+.tome-flip-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 34px; height: 34px; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(20,14,6,0.82); color: #efe3c6;
+  border: 1px solid rgba(239,227,198,0.4);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  cursor: default; z-index: 6;
+  transition: background 160ms ease, opacity 160ms ease;
+}
+.tome-flip-arrow:hover { background: rgba(40,28,12,0.95); }
+.tome-flip-arrow:disabled { opacity: 0.25; }
+.tome-flip-left { left: 10px; }
+.tome-flip-right { right: 10px; }
+
+.tome-pageno {
+  position: absolute; bottom: 10px; left: 16px;
+  font-family: 'Lawrence', Georgia, serif; font-size: 11px;
+  color: #8a6a3b; opacity: .8;
+}
+.tome-pageno-right { left: auto; right: 16px; }
+.tome-firstline { font-style: italic; color: #55401f; }
+.tome-flip-hint { font-style: italic; color: #8a6a3b !important; font-size: 13px !important; }
+
+.tome-right-chapter { display: flex; flex-direction: column; height: 100%; }
+.tome-next-teaser {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  margin-top: 12px; padding: 9px 12px;
+  border: 1px dashed rgba(107,82,51,0.5); border-radius: 8px;
+  font-family: 'Lawrence', Georgia, serif; font-size: 12.5px; color: #6b5233;
+}
+
+/* ---- shelf arrows ---- */
+.shelf-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 30;
+  width: 40px; height: 40px; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(10,10,10,0.9); color: #ece5d3;
+  border: 1px solid rgba(255,138,61,0.5);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+  cursor: default;
+  transition: background 160ms ease, opacity 160ms ease, border-color 160ms ease;
+}
+.shelf-arrow:hover:not(:disabled) { background: rgba(255,138,61,0.25); border-color: var(--accent, #ff8a3d); }
+.shelf-arrow:disabled { opacity: 0.25; }
+.shelf-arrow-left { left: 10px; }
+.shelf-arrow-right { right: 10px; }
+
+/* static shelf track (no marquee animation; arrow-driven) */
+.shelf-track-static {
+  display: flex; align-items: center;
+  width: max-content; padding: 44px 0 48px;
+  will-change: transform;
+}
+
+/* ---- cover title band over painted art ---- */
+.book-cover-titleband {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  padding: 18px 12px 12px;
+  background: linear-gradient(180deg, rgba(8,6,3,0.72) 0%, rgba(8,6,3,0.25) 32%, rgba(8,6,3,0.15) 55%, rgba(8,6,3,0.78) 100%);
+}
+.book-cover-titlelines { text-align: center; }
+.book-cover-titlelines div {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #f5f1ea; font-size: 15px; line-height: 1.45; letter-spacing: 0.05em; font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 176px;
+}
+.book-cover-brand {
+  font-family: Georgia, serif; font-size: 7px; letter-spacing: 0.28em;
+  color: rgba(233,222,200,0.85); text-shadow: 0 1px 2px rgba(0,0,0,0.9);
+}
+
