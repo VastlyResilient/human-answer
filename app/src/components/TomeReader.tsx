@@ -1,4 +1,5 @@
 import { ExternalLink, CalendarDays, Clock3, KeyRound, Search } from 'lucide-react'
+import { buildScene, svgDataUri } from '../art/scene'
 
 export interface Tome {
   id: string
@@ -90,7 +91,11 @@ export default function TomeReader({ tome }: { tome: Tome }) {
             <div className="tome-cover-brand">A WOLF SPIRIT EDITION</div>
           </div>
           <div className="tome-cover-plate">
-            <img src={tome.plate ?? '../folio/plate-generic.png'} alt="" draggable={false} />
+            <img
+              src={tome.plate ?? svgDataUri(buildScene(tome.questionSummary + ' ' + tome.title.join(' ')).plate)}
+              alt=""
+              draggable={false}
+            />
           </div>
         </div>
 
